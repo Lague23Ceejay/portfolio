@@ -96,3 +96,18 @@ Each CSS file targets a specific component:
 - Add a small build or lint step if the project expands further.
 - Move inline button handlers to JS entirely for cleaner separation of concerns.
 - Expand accessibility with improved labels and keyboard support for the nav toggle.
+
+
+# Go to testing branch
+git checkout testing-publish
+
+# Make changes, then push
+git add .
+git commit -m "testing new feature"
+git push
+
+### Command line for when merging progress to main
+
+git checkout main
+git merge testing-publish
+git push
