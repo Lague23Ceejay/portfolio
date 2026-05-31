@@ -1,0 +1,125 @@
+/* FILE: portfolio/css/contact.css */
+
+/* ============================================================
+   contact.css — Contact section & QR block
+   ============================================================ */
+
+#contact {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+}
+
+.contact-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 5vw, 5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.contact-heading .gradient-text {
+  background: linear-gradient(135deg, #fff 0%, #444 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.contact-sub {
+  margin-top: 1.5rem;
+  color: var(--gray-3);
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+.contact-email {
+  margin-top: 2rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: var(--white);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 0.25rem;
+  transition: border-color 0.3s;
+  display: inline-block;
+}
+
+.contact-email:hover {
+  border-color: var(--white);
+}
+
+/* ── QR BLOCK ── */
+.qr-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.qr-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gray-3);
+  text-align: center;
+}
+
+.qr-wrapper {
+  padding: 1.5rem;
+  background: var(--white);
+  display: inline-flex;
+  position: relative;
+}
+
+.qr-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--black);
+  border-style: solid;
+}
+
+.qr-corner.tl { top: 6px;    left: 6px;   border-width: 2px 0 0 2px; }
+.qr-corner.tr { top: 6px;    right: 6px;  border-width: 2px 2px 0 0; }
+.qr-corner.bl { bottom: 6px; left: 6px;   border-width: 0 0 2px 2px; }
+.qr-corner.br { bottom: 6px; right: 6px;  border-width: 0 2px 2px 0; }
+
+#qrcode canvas,
+#qrcode img { display: block; }
+
+.qr-url-input-wrap {
+  width: 100%;
+  max-width: 320px;
+}
+
+.qr-url-input-wrap label {
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gray-3);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.qr-url-input-wrap input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--white);
+  padding: 0.65rem 1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.25s;
+}
+
+.qr-url-input-wrap input:focus {
+  border-color: rgba(255,255,255,0.4);
+}
+
+.qr-url-input-wrap button {
+  margin-top: 0.5rem;
+  width: 100%;
+}

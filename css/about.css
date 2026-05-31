@@ -1,0 +1,59 @@
+/* FILE: portfolio/css/about.css */
+
+/* ============================================================
+   about.css — About section
+   ============================================================ */
+
+#about {
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: start;
+}
+
+.about-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.about-text {
+  color: var(--gray-3);
+  font-size: 0.95rem;
+  line-height: 1.9;
+  margin-bottom: 1.5rem;
+}
+
+.about-text strong {
+  color: var(--gray-light);
+  font-weight: 400;
+}
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.skill-tag {
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(117, 107, 107, 0.08);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-3);
+  transition: all 0.25s;
+}
+
+.skill-tag:hover {
+  border-color: rgba(255,255,255,0.25);
+  color: var(--white);
+  background: rgba(255,255,255,0.03);
+}

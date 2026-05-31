@@ -1,0 +1,246 @@
+/* FILE: portfolio/css/gallery.css */
+
+/* ============================================================
+   gallery.css — College Journey Gallery Section
+   Masonry grid, filter tabs, lightbox overlay
+   ============================================================ */
+
+#gallery {
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.gallery-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+
+.gallery-sub {
+  color: var(--gray-3);
+  font-size: 0.88rem;
+  margin-bottom: 2.5rem;
+}
+
+/* ── FILTER TABS ── */
+.gallery-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.filter-btn {
+  padding: 0.45rem 1.1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--gray-3);
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.filter-btn:hover {
+  color: var(--white);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.filter-btn.active {
+  background: var(--white);
+  color: var(--black);
+  border-color: var(--white);
+}
+
+/* ── MASONRY GRID ── */
+.masonry-grid {
+  columns: 3;
+  column-gap: 1rem;
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--gray-1);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.masonry-item.hidden {
+  display: none;
+}
+
+/* Image placeholder (replaced by real <img> tags) */
+.masonry-item .photo-placeholder {
+  width: 100%;
+  display: block;
+  background: var(--gray-2);
+  aspect-ratio: auto;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  /* Placeholder gradient until real photo is added */
+  min-height: 160px;
+}
+
+.masonry-item img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+/* Varied heights for masonry feel */
+.masonry-item:nth-child(3n+1) .photo-placeholder { height: 240px; }
+.masonry-item:nth-child(3n+2) .photo-placeholder { height: 180px; }
+.masonry-item:nth-child(3n+3) .photo-placeholder { height: 300px; }
+
+/* ── CARD OVERLAY ── */
+.masonry-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 55%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.25rem;
+}
+
+.masonry-item:hover .masonry-overlay { opacity: 1; }
+.masonry-item:hover img,
+.masonry-item:hover .photo-placeholder { transform: scale(1.04); }
+
+.masonry-caption {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--white);
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+
+.masonry-tag {
+  display: inline-block;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.7);
+}
+
+/* ── LIGHTBOX ── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.lightbox.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.lightbox-inner {
+  position: relative;
+  max-width: 860px;
+  width: 90%;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.lightbox.open .lightbox-inner { transform: scale(1); }
+
+.lightbox-img {
+  width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  display: block;
+  background: var(--gray-1);
+}
+
+/* Placeholder shown when no real image is set */
+.lightbox-placeholder {
+  width: 100%;
+  height: 400px;
+  background: var(--gray-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-3);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lightbox-info {
+  padding: 1.25rem 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.lightbox-caption {
+  font-size: 0.9rem;
+  color: var(--white);
+  line-height: 1.5;
+}
+
+.lightbox-tag {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--gray-light);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  background: none;
+  border: none;
+  color: var(--gray-light);
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.lightbox-close:hover { color: var(--white); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .masonry-grid { columns: 2; }
+}
+
+@media (max-width: 600px) {
+  .masonry-grid   { columns: 2; column-gap: 0.5rem; }
+  .masonry-item   { margin-bottom: 0.5rem; }
+  .gallery-filters { gap: 0.4rem; }
+  .filter-btn     { font-size: 0.65rem; padding: 0.4rem 0.8rem; }
+  .masonry-overlay { opacity: 1; }   /* always show caption on touch */
+  .lightbox-inner { width: 95%; }
+  .lightbox-placeholder { height: 220px; }
+}
+
+@media (max-width: 380px) {
+  .masonry-grid { columns: 1; }
+}

@@ -1,0 +1,35 @@
+/* FILE: portfolio/css/footer.css */
+
+/* ============================================================
+   footer.css — Footer
+   ============================================================ */
+
+footer {
+  padding: 2rem 4rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-copy {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--gray-3);
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-links a {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--gray-3);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover { color: var(--white); }
