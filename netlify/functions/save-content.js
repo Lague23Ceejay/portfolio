@@ -32,15 +32,14 @@ exports.handler = async function (event) {
     };
   }
 
-  let bodyObj;
+  let newData;
   try {
-    bodyObj = JSON.parse(event.body);
+    if (!event.body || event.body.trim() === '') {
+      return { statusCode: 400, body: JSON.stringify({ error: 'Empty request body — make sure all admin tabs have loaded before saving.' }) };
+    }
+    newData = JSON.parse(event.body);
   } catch {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body' }) };
-  }
-
-  if (!bodyObj || (typeof bodyObj.content === 'undefined')) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Missing "content" in request body' }) };
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body — could not parse request.' }) };
   }
 
   const branch   = GITHUB_BRANCH || 'main';
@@ -57,16 +56,15 @@ exports.handler = async function (event) {
     });
 
     if (!getRes.ok) {
-      const txt = await getRes.text();
-      return { statusCode: 500, body: JSON.stringify({ error: `GitHub GET failed (${getRes.status}): ${txt}` }) };
+      const err = await getRes.json();
+      return { statusCode: 500, body: JSON.stringify({ error: 'GitHub GET failed: ' + err.message }) };
     }
 
     const fileInfo = await getRes.json();
     const sha      = fileInfo.sha;
 
     // Step 2: Commit the updated data.json
-    const rawContent = typeof bodyObj.content === 'string' ? bodyObj.content : JSON.stringify(bodyObj.content, null, 2);
-    const content  = Buffer.from(rawContent, 'utf8').toString('base64');
+    const content  = Buffer.from(JSON.stringify(newData, null, 2)).toString('base64');
     const putRes   = await fetch(apiBase, {
       method:  'PUT',
       headers: {
@@ -83,11 +81,8 @@ exports.handler = async function (event) {
     });
 
     if (!putRes.ok) {
-      const txt = await putRes.text();
-      const hint = txt && txt.includes('Resource not accessible by personal access token')
-        ? 'Hint: personal access token lacks repo contents write permission or is fine-grained without content write access.'
-        : '';
-      return { statusCode: 500, body: JSON.stringify({ error: `GitHub PUT failed (${putRes.status}): ${txt}`, hint }) };
+      const err = await putRes.json();
+      return { statusCode: 500, body: JSON.stringify({ error: 'GitHub PUT failed: ' + err.message }) };
     }
 
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };

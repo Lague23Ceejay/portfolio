@@ -83,10 +83,13 @@ async function openAdmin() {
   try {
     const res = await fetch('/data.json?v=' + Date.now());
     currentData = await res.json();
+
+    // Build ALL section forms immediately so collectData() can read every field
     buildForms(currentData);
     setStatus('');
   } catch (e) {
-    setStatus('Failed to load data.json', true);
+    setStatus('Failed to load data.json — is the file in your repo root?', true);
+    console.error(e);
   }
 }
 
@@ -355,17 +358,27 @@ function collectData() {
 
 // ── SAVE ──
 document.getElementById('admin-save-btn').addEventListener('click', async () => {
-  const btn  = document.getElementById('admin-save-btn');
+  const btn = document.getElementById('admin-save-btn');
   btn.disabled = true;
   setStatus('Saving…');
 
   const data = collectData();
 
+  // Guard: make sure we actually have content before sending
+  if (!data.hero.firstName && !data.contact.email) {
+    setStatus('Nothing to save — open each tab first.', true);
+    btn.disabled = false;
+    return;
+  }
+
   try {
+    const body = JSON.stringify(data);
+    console.log('Sending to save-content:', body); // helpful for debugging
+
     const res = await fetch('/.netlify/functions/save-content', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(data),
+      body,
     });
 
     const json = await res.json();
@@ -377,6 +390,7 @@ document.getElementById('admin-save-btn').addEventListener('click', async () => 
     }
   } catch (e) {
     setStatus('Network error — check console.', true);
+    console.error(e);
   } finally {
     btn.disabled = false;
   }
