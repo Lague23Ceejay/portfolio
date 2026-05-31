@@ -1,0 +1,410 @@
+/* FILE: portfolio/css/admin.css */
+
+/* ============================================================
+   admin.css — Hidden admin panel styles
+   PIN pad overlay + full editor dashboard
+   ============================================================ */
+
+/* ── PIN OVERLAY ── */
+#admin-pin-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(0,0,0,0.96);
+  backdrop-filter: blur(20px);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+#admin-pin-overlay.open {
+  display: flex;
+}
+
+.pin-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gray-3);
+}
+
+.pin-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fff 0%, #888 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.pin-dots {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.pin-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: transparent;
+  transition: background 0.2s;
+}
+
+.pin-dot.filled {
+  background: var(--white);
+  border-color: var(--white);
+}
+
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.pin-btn {
+  width: 64px;
+  height: 64px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.pin-btn.pin-del {
+  font-size: 0.9rem;
+  color: var(--gray-3);
+}
+
+.pin-btn.pin-zero {
+  grid-column: 2;
+}
+
+.pin-error {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: #ff6b6b;
+  min-height: 1rem;
+  text-align: center;
+}
+
+/* ── ADMIN PANEL ── */
+#admin-panel {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: #0d0d0d;
+  overflow-y: auto;
+  flex-direction: column;
+}
+
+#admin-panel.open {
+  display: flex;
+}
+
+.admin-header {
+  position: sticky;
+  top: 0;
+  background: rgba(13,13,13,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.admin-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.admin-title span {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  font-size: 0.75rem;
+  color: var(--gray-3);
+  margin-left: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.admin-save-btn {
+  padding: 0.5rem 1.5rem;
+  background: var(--white);
+  color: var(--black);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.admin-save-btn:hover   { background: var(--gray-light); }
+.admin-save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.admin-close-btn {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--gray-3);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-close-btn:hover {
+  color: var(--white);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.admin-status {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--gray-3);
+}
+
+.admin-status.success { color: #6bcb77; }
+.admin-status.error   { color: #ff6b6b; }
+
+/* ── ADMIN BODY ── */
+.admin-body {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Sidebar tabs */
+.admin-sidebar {
+  border-right: 1px solid rgba(255,255,255,0.07);
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  position: sticky;
+  top: 57px;
+  align-self: start;
+  height: calc(100vh - 57px);
+  overflow-y: auto;
+}
+
+.admin-tab {
+  padding: 0.65rem 1.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-3);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  text-align: left;
+  transition: color 0.2s, background 0.2s;
+  border-left: 2px solid transparent;
+}
+
+.admin-tab:hover { color: var(--white); background: rgba(255,255,255,0.03); }
+.admin-tab.active {
+  color: var(--white);
+  border-left-color: var(--white);
+  background: rgba(255,255,255,0.04);
+}
+
+/* Content panels */
+.admin-content {
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.admin-section {
+  display: none;
+  max-width: 720px;
+}
+
+.admin-section.active { display: block; }
+
+.admin-section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+/* ── FORM ELEMENTS ── */
+.admin-field {
+  margin-bottom: 1.25rem;
+}
+
+.admin-field label {
+  display: block;
+  font-size: 0.67rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gray-3);
+  margin-bottom: 0.4rem;
+}
+
+.admin-field input,
+.admin-field textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white);
+  padding: 0.65rem 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.25s;
+  resize: vertical;
+}
+
+.admin-field input:focus,
+.admin-field textarea:focus {
+  border-color: rgba(255,255,255,0.35);
+}
+
+/* ── CARD GROUP (projects / gallery items) ── */
+.admin-card-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.admin-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 1.25rem;
+  background: rgba(255,255,255,0.02);
+}
+
+.admin-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.admin-card-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray-light);
+}
+
+.admin-card-toggle {
+  font-size: 0.8rem;
+  color: var(--gray-3);
+  transition: transform 0.2s;
+}
+
+.admin-card.collapsed .admin-card-toggle { transform: rotate(-90deg); }
+.admin-card.collapsed .admin-card-body   { display: none; }
+
+/* Skills list */
+.skills-admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.skill-admin-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.skill-admin-row input { flex: 1; }
+
+.admin-remove-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--gray-3);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.admin-remove-btn:hover { color: #ff6b6b; border-color: #ff6b6b; }
+
+.admin-add-btn {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.15);
+  color: var(--gray-3);
+  padding: 0.5rem 1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+  margin-top: 0.25rem;
+}
+
+.admin-add-btn:hover {
+  color: var(--white);
+  border-color: rgba(255,255,255,0.3);
+}
+
+/* Stack row */
+.stack-admin-row {
+  display: grid;
+  grid-template-columns: 1fr 80px auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .admin-body { grid-template-columns: 1fr; }
+  .admin-sidebar {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0.75rem;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .admin-tab { border-left: none; border-bottom: 2px solid transparent; padding: 0.5rem 0.75rem; }
+  .admin-tab.active { border-left-color: transparent; border-bottom-color: var(--white); }
+  .admin-content  { padding: 1.25rem; }
+  .admin-header   { padding: 0.85rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+  .pin-btn { width: 56px; height: 56px; }
+}

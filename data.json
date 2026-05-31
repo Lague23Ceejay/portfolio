@@ -1,0 +1,80 @@
+{
+  "hero": {
+    "eyebrow": "Portfolio · Information Systems",
+    "firstName": "Christian John",
+    "lastName": "K. Lague",
+    "subtitle": "Bachelor of Science in Information Systems",
+    "location": "Building systems that matter · Davao, Philippines"
+  },
+  "about": {
+    "heading": "Driven by systems,\nshaped by curiosity.",
+    "bio1": "I'm <strong>Christian John</strong>, an Information Systems graduate passionate about bridging the gap between technology and real-world problems. I design and build solutions that are both <strong>functional and thoughtful</strong>.",
+    "bio2": "From database architecture to front-end interfaces, I thrive in the full spectrum of IS work — always asking how systems can serve people better.",
+    "skills": [
+      "Systems Analysis",
+      "Database Design",
+      "Web Development",
+      "UI/UX Thinking",
+      "Project Management",
+      "Data Analytics"
+    ]
+  },
+  "projects": [
+    {
+      "num": "001",
+      "status": "In Progress",
+      "statusDone": false,
+      "codename": "████████",
+      "type": "Web Application",
+      "hint": "💡 Hint: Solves a real campus problem.",
+      "stack": [
+        { "name": "React",   "pct": 85 },
+        { "name": "Node.js", "pct": 70 },
+        { "name": "MySQL",   "pct": 60 }
+      ]
+    },
+    {
+      "num": "002",
+      "status": "Completed",
+      "statusDone": true,
+      "codename": "██████",
+      "type": "Data & Analytics System",
+      "hint": "💡 Hint: Turns raw data into decisions.",
+      "stack": [
+        { "name": "Python", "pct": 90 },
+        { "name": "SQL",    "pct": 80 },
+        { "name": "Pandas", "pct": 75 }
+      ]
+    },
+    {
+      "num": "003",
+      "status": "In Progress",
+      "statusDone": false,
+      "codename": "█████████",
+      "type": "API / Backend System",
+      "hint": "💡 Hint: Built for scale, designed for speed.",
+      "stack": [
+        { "name": "Python",     "pct": 80 },
+        { "name": "REST API",   "pct": 70 },
+        { "name": "PostgreSQL", "pct": 55 }
+      ]
+    }
+  ],
+  "gallery": [
+    { "category": "Org Life",  "caption": "Our org's general assembly — where it all started.",          "src": "" },
+    { "category": "Thesis",    "caption": "Late nights finalizing our thesis manuscript.",                "src": "" },
+    { "category": "Events",    "caption": "IT Week 2023 — representing our department.",                 "src": "" },
+    { "category": "Friends",   "caption": "The crew that made every deadline bearable.",                 "src": "" },
+    { "category": "Academics", "caption": "Defending our capstone project — all the hard work paid off.", "src": "" },
+    { "category": "Org Life",  "caption": "Leadership summit with fellow officers.",                     "src": "" },
+    { "category": "Events",    "caption": "Acquaintance party — first year, first memories.",            "src": "" },
+    { "category": "Thesis",    "caption": "System demo day — watching our project come to life.",        "src": "" },
+    { "category": "Friends",   "caption": "Last semester lunch — bittersweet but unforgettable.",        "src": "" }
+  ],
+  "contact": {
+    "email": "christian@email.com",
+    "linkedin": "#",
+    "github": "#",
+    "resume": "#"
+  }
+}

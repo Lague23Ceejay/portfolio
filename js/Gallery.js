@@ -6,15 +6,15 @@
 
 // ── FILTER TABS ──
 const filterBtns = document.querySelectorAll('.filter-btn');
-const masonryItems = document.querySelectorAll('.masonry-item');
+const masonryGrid = document.querySelector('.masonry-grid');
 
 filterBtns.forEach(btn => {
   btn.addEventListener('click', () => {
-    // Update active button
     filterBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
     const filter = btn.dataset.filter;
+    const masonryItems = document.querySelectorAll('.masonry-item');
 
     masonryItems.forEach(item => {
       const tag = item.dataset.category;
@@ -34,13 +34,15 @@ const lightboxCaption = document.getElementById('lightbox-caption');
 const lightboxTag     = document.getElementById('lightbox-tag');
 const lightboxClose   = document.getElementById('lightbox-close');
 
-masonryItems.forEach(item => {
-  item.addEventListener('click', () => {
+if (masonryGrid) {
+  masonryGrid.addEventListener('click', e => {
+    const item = e.target.closest('.masonry-item');
+    if (!item) return;
+
     const src     = item.dataset.src;
     const caption = item.dataset.caption;
     const tag     = item.dataset.category;
 
-    // Show image if src is provided, otherwise show placeholder text
     if (src) {
       lightboxImg.src = src;
       lightboxImg.style.display = 'block';
@@ -56,7 +58,7 @@ masonryItems.forEach(item => {
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
   });
-});
+}
 
 // Close on X button
 lightboxClose.addEventListener('click', closeLightbox);
