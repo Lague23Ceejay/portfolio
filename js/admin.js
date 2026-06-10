@@ -381,12 +381,22 @@ document.getElementById('admin-save-btn').addEventListener('click', async () => 
       body,
     });
 
-    const json = await res.json();
+    let json;
+    try {
+      json = await res.json();
+    } catch (parseError) {
+      const text = await res.text();
+      console.error('save-content response parse error:', parseError, text);
+      setStatus(`Save failed: server returned ${res.status}`, true);
+      return;
+    }
+
     if (res.ok) {
       setStatus('Saved! Site will update in ~30s.', false, true);
       currentData = data;
     } else {
-      setStatus(json.error || 'Save failed.', true);
+      setStatus(json.error || `Save failed (${res.status}).`, true);
+      console.error('save-content error response:', json);
     }
   } catch (e) {
     setStatus('Network error — check console.', true);
