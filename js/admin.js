@@ -375,7 +375,7 @@ document.getElementById('admin-save-btn').addEventListener('click', async () => 
     const body = JSON.stringify(data);
     console.log('Sending to save-content:', body); // helpful for debugging
 
-    const res = await fetch('/.netlify/functions/save-content', {
+    const res = await fetch('/api/save-content', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body,

@@ -1,5 +1,0 @@
-# FILE: portfolio/netlify.toml
-
-[build]
-  functions = "netlify/functions"
-  publish = "."
