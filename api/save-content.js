@@ -1,23 +1,10 @@
 /* FILE: portfolio/api/save-content.js */
 
 /* ============================================================
-   save-content.js — Vercel Serverless Function
-   Receives updated data.json content from the admin panel
-   and commits it to your GitHub repo via the GitHub API.
-
-   SETUP (one-time, in Vercel dashboard):
-   Project → Settings → Environment Variables → Add:
-
-     GITHUB_TOKEN   → your GitHub personal access token
-                      Needs: Contents read & write on your portfolio repo
-
-     GITHUB_OWNER   → your GitHub username (e.g. Lague23Ceejay)
-     GITHUB_REPO    → your repo name       (e.g. portfolio)
-     GITHUB_BRANCH  → main
+   save-content.js — Vercel Serverless Function (CommonJS)
    ============================================================ */
 
-export default async function handler(req, res) {
-  // Only allow POST
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -51,7 +38,7 @@ export default async function handler(req, res) {
   try {
     const content = Buffer.from(JSON.stringify(newData, null, 2)).toString('base64');
 
-    // Step 1: Get current file SHA (or create fresh if missing)
+    // Get current file SHA
     const getRes = await fetch(`${apiBase}?ref=${branch}`, { headers });
     let sha;
 
@@ -59,15 +46,15 @@ export default async function handler(req, res) {
       const fileInfo = await getRes.json();
       sha = fileInfo.sha;
     } else if (getRes.status === 404) {
-      sha = undefined; // file doesn't exist yet, will be created
+      sha = undefined;
     } else {
       const err = await getRes.json();
       return res.status(500).json({ error: 'GitHub GET failed: ' + (err.message || getRes.status) });
     }
 
-    // Step 2: Commit the updated data.json
+    // Commit updated data.json
     const putRes = await fetch(apiBase, {
-      method:  'PUT',
+      method: 'PUT',
       headers,
       body: JSON.stringify({
         message: 'admin: update portfolio content',
@@ -87,4 +74,4 @@ export default async function handler(req, res) {
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
-}
+};
