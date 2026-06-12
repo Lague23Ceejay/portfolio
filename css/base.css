@@ -269,3 +269,25 @@ section {
   .skills-grid   { grid-template-columns: 1fr; }
   .project-card  { padding: 1.5rem 1rem; }
 }
+
+/* Extra mobile safety: ensure common layout containers never overflow viewport */
+@media (max-width: 820px) {
+  /* force two-column grids to single column where applicable */
+  .about-grid, .project-grid, .skills-grid, .projects-header, .admin-body {
+    grid-template-columns: 1fr !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* masonry uses columns; reduce to a single column to avoid horizontal overflow */
+  .masonry-grid { columns: 1 !important; column-gap: 0.5rem !important; }
+
+  /* make sure any wide inner elements wrap */
+  img, picture, video, svg, iframe, .project-card, .admin-content, .lightbox-inner {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* wrap long words/URLs so they don't force extra width */
+  p, a, .project-title, .contact-email { word-wrap: break-word; overflow-wrap: anywhere; }
+}
