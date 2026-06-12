@@ -38,6 +38,13 @@ body {
   width: 100%;
 }
 
+/* Make media elements scale down on small viewports to avoid hidden content */
+img, picture, video, svg, canvas, iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* ── CANVAS BACKGROUND ── */
 #bg-canvas {
   position: fixed;

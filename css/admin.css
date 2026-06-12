@@ -399,6 +399,40 @@
   transition: transform 0.2s;
 }
 
+/* Mobile adjustments for admin panel */
+@media (max-width: 900px) {
+  .admin-body {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .admin-sidebar {
+    position: relative;
+    top: 0;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+    overflow-x: auto;
+    align-items: center;
+  }
+  .admin-tab {
+    padding: 0.5rem 0.85rem;
+    white-space: nowrap;
+    font-size: 0.72rem;
+  }
+  .admin-content { padding: 1rem; }
+  .admin-section { max-width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .admin-header { padding: 0.75rem 1rem; }
+  .admin-save-btn, .admin-close-btn { padding: 0.4rem 0.8rem; font-size: 0.68rem; }
+  .pin-btn { width: 48px; height: 48px; font-size: 1rem; }
+}
+
 .admin-card.collapsed .admin-card-toggle { transform: rotate(-90deg); }
 .admin-card.collapsed .admin-card-body   { display: none; }
 
