@@ -482,6 +482,58 @@
 
 .admin-add-btn:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
 
+.gallery-batch-upload {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+  margin-top: 0.75rem;
+}
+
+.gallery-batch-upload select,
+.gallery-batch-upload input[type="file"] {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white);
+  padding: 0.75rem 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  outline: none;
+}
+
+.gallery-upload-note {
+  font-size: 0.72rem;
+  color: var(--gray-3);
+  margin-top: 0.5rem;
+  line-height: 1.45;
+}
+
+.gallery-image-preview {
+  margin-top: 0.75rem;
+  width: 100%;
+  min-height: 130px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.gallery-image-preview img {
+  max-width: 100%;
+  max-height: 180px;
+  height: auto;
+  display: block;
+}
+
+.photo-placeholder {
+  width: 100%;
+  min-height: 130px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.06));
+}
+
 /* Stack row */
 .stack-admin-row {
   display: grid;

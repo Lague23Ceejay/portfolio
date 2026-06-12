@@ -239,20 +239,42 @@ function addProject() {
   bindCardToggle();
 }
 
+const GALLERY_CATEGORIES = ['Org Life', 'Thesis', 'Events', 'Academics', 'Friends'];
+
 // GALLERY
 function buildGalleryForm(gallery) {
   const el = document.getElementById('section-gallery');
   el.innerHTML = `
     <h2 class="admin-section-title">Gallery</h2>
+    <div class="admin-field">
+      <label>Batch upload photos</label>
+      <div class="gallery-batch-upload">
+        <select id="gallery-upload-category">
+          ${buildGalleryCategoryOptions()}
+        </select>
+        <input type="file" id="gallery-upload-files" multiple accept="image/*">
+        <button type="button" class="admin-add-btn" onclick="uploadGalleryFiles()">Upload Selected Photos</button>
+      </div>
+      <p class="gallery-upload-note">Select one or more images and choose a category. Each file is added to the gallery list immediately.</p>
+    </div>
     <div class="admin-card-group" id="gallery-list">
       ${gallery.map((g, i) => galleryCard(g, i)).join('')}
     </div>
     <button class="admin-add-btn" style="margin-top:1rem" onclick="addGalleryItem()">+ Add Photo</button>
   `;
   bindCardToggle();
+  bindGalleryFileInputs();
+}
+
+function buildGalleryCategoryOptions() {
+  return GALLERY_CATEGORIES.map(category => `<option value="${category}">${category}</option>`).join('');
 }
 
 function galleryCard(g, i) {
+  const previewHtml = g.src
+    ? `<img src="${escHtml(g.src)}" alt="${escHtml(g.caption)}">`
+    : `<div class="photo-placeholder"></div>`;
+
   return `
     <div class="admin-card" data-index="${i}">
       <div class="admin-card-header">
@@ -260,9 +282,16 @@ function galleryCard(g, i) {
         <span class="admin-card-toggle">▾</span>
       </div>
       <div class="admin-card-body">
-        ${field('Category (Org Life / Thesis / Events / Academics / Friends)', `g${i}-category`, g.category)}
-        ${field('Caption',       `g${i}-caption`, g.caption)}
-        ${field('Image path (e.g. assets/photo.jpg or full URL)', `g${i}-src`, g.src)}
+        ${field('Category', `g${i}-category`, g.category)}
+        ${field('Caption',  `g${i}-caption`,  g.caption)}
+        <div class="admin-field">
+          <label for="g${i}-file">Image file</label>
+          <input type="file" id="g${i}-file" class="gallery-item-file-input" data-index="${i}" accept="image/*">
+          <input type="hidden" id="g${i}-src" value="${escHtml(g.src)}">
+          <div class="gallery-image-preview" id="g${i}-preview">
+            ${previewHtml}
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -273,6 +302,69 @@ function addGalleryItem() {
   const i    = list.querySelectorAll('.admin-card').length;
   list.insertAdjacentHTML('beforeend', galleryCard({ category: 'Events', caption: '', src: '' }, i));
   bindCardToggle();
+  bindGalleryFileInputs();
+}
+
+function uploadGalleryFiles() {
+  const files = document.getElementById('gallery-upload-files').files;
+  const categorySelect = document.getElementById('gallery-upload-category');
+  const category = categorySelect ? categorySelect.value : GALLERY_CATEGORIES[0];
+  const list = document.getElementById('gallery-list');
+
+  if (!files || files.length === 0) {
+    setStatus('Select at least one image to upload.', true);
+    return;
+  }
+
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+
+    const i = list.querySelectorAll('.admin-card').length;
+    list.insertAdjacentHTML('beforeend', galleryCard({ category, caption: file.name, src: '' }, i));
+    bindCardToggle();
+
+    const reader = new FileReader();
+    reader.onload = (e) => setGalleryCardSrc(i, e.target.result, file.name);
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('gallery-upload-files').value = '';
+  setStatus(`${files.length} file(s) added to gallery.`, false, true);
+  bindGalleryFileInputs();
+}
+
+function bindGalleryFileInputs() {
+  document.querySelectorAll('.gallery-item-file-input').forEach(input => {
+    input.onchange = handleGalleryFileInput;
+  });
+}
+
+function handleGalleryFileInput(event) {
+  const input = event.target;
+  const index = input.dataset.index;
+  const file = input.files && input.files[0];
+  if (!file || !index) return;
+
+  if (!file.type.startsWith('image/')) {
+    setStatus('Only image files are supported.', true);
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => setGalleryCardSrc(index, e.target.result, file.name);
+  reader.readAsDataURL(file);
+}
+
+function setGalleryCardSrc(index, src, caption) {
+  const srcInput = document.getElementById(`g${index}-src`);
+  const preview = document.getElementById(`g${index}-preview`);
+  const captionInput = document.getElementById(`g${index}-caption`);
+
+  if (srcInput) srcInput.value = src;
+  if (preview) {
+    preview.innerHTML = `<img src="${src}" alt="${escHtml(caption || '')}">`;
+  }
+  if (captionInput && caption) captionInput.value = caption;
 }
 
 // CONTACT
