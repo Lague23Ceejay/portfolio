@@ -25,7 +25,7 @@
       "status": "In Progress",
       "statusDone": false,
       "codename": "████████",
-      "type": "Web Application",
+      "type": "Mobile Application",
       "hint": "💡 Hint: Solves a real campus problem.",
       "stack": [
         {
@@ -37,7 +37,7 @@
           "pct": 70
         },
         {
-          "name": "MySQL",
+          "name": "PosgreSQL",
           "pct": 60
         }
       ]
