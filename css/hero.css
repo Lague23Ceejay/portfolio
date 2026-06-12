@@ -1,7 +1,7 @@
 /* FILE: portfolio/css/hero.css */
 
 /* ============================================================
-   hero.css — Hero section
+   hero.css — Hero section + profile image
    ============================================================ */
 
 #hero {
@@ -14,10 +14,49 @@
   overflow: hidden;
 }
 
-/* Legacy gradient divs replaced by canvas — kept hidden */
 .hero-gradient,
 .hero-gradient-2 { display: none; }
 
+/* ── PROFILE IMAGE ── */
+.hero-profile {
+  margin-bottom: 2rem;
+  animation: fadeUp 0.8s ease both;
+}
+
+.hero-profile-img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.15);
+  display: block;
+  transition: border-color 0.3s;
+}
+
+.hero-profile-img:hover {
+  border-color: rgba(255,255,255,0.4);
+}
+
+.hero-profile-img.frame-circle {
+  border-radius: 50%;
+}
+
+.hero-profile-img.frame-square {
+  border-radius: 4px;
+}
+
+/* Placeholder shown when no image is set */
+.hero-profile-placeholder {
+  width: 100px;
+  height: 100px;
+  background: rgba(255,255,255,0.04);
+  border: 1px dashed rgba(255,255,255,0.1);
+  display: none; /* hidden by default, shown via JS if no image */
+}
+
+.hero-profile-placeholder.frame-circle { border-radius: 50%; }
+.hero-profile-placeholder.frame-square { border-radius: 4px; }
+
+/* ── HERO TEXT ── */
 .hero-eyebrow {
   font-size: 0.72rem;
   letter-spacing: 0.25em;
@@ -38,7 +77,6 @@
 
 .hero-name .line-2 {
   background: linear-gradient(135deg, #fff 0%, #555 100%);
-  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -83,4 +121,13 @@
   width: 40px;
   height: 1px;
   background: var(--gray-3);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .hero-profile-img,
+  .hero-profile-placeholder {
+    width: 80px;
+    height: 80px;
+  }
 }

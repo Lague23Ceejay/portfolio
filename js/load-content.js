@@ -3,14 +3,12 @@
 /* ============================================================
    load-content.js
    Fetches data.json and renders all site content dynamically.
-   Must load BEFORE gallery.js and reveal.js in index.html.
    ============================================================ */
 
 async function loadContent() {
   let data;
-
   try {
-    const res = await fetch('/data.json?v=' + Date.now()); // bust cache on reload
+    const res = await fetch('/data.json?v=' + Date.now());
     data = await res.json();
   } catch (e) {
     console.error('Could not load data.json:', e);
@@ -23,26 +21,48 @@ async function loadContent() {
   renderGallery(data.gallery);
   renderContact(data.contact);
 
-  // After content is injected, re-observe reveal elements and stack bars
   initReveal();
   initStackBars();
 }
 
 // ── HERO ──
 function renderHero(h) {
-  setText('#hero .hero-eyebrow',     h.eyebrow);
+  setText('#hero .hero-eyebrow',      h.eyebrow);
   setText('#hero .hero-name .line-1', h.firstName);
   setText('#hero .hero-name .line-2', h.lastName);
+
   const titleEl = document.querySelector('#hero .hero-title');
   if (titleEl) titleEl.innerHTML = `<span>${h.subtitle}</span><br>${h.location}`;
+
+  // Profile image
+  const img         = document.getElementById('hero-profile-img');
+  const placeholder = document.getElementById('hero-profile-placeholder');
+  const frame       = h.profileFrame || 'circle';
+
+  if (img) {
+    img.className = `hero-profile-img frame-${frame}`;
+    if (h.profileImage) {
+      img.src             = h.profileImage;
+      img.style.display   = 'block';
+      if (placeholder) placeholder.style.display = 'none';
+    } else {
+      img.style.display   = 'none';
+      if (placeholder) {
+        placeholder.className    = `hero-profile-placeholder frame-${frame}`;
+        placeholder.style.display = 'block';
+      }
+    }
+  }
 }
 
 // ── ABOUT ──
 function renderAbout(a) {
   const headingEl = document.querySelector('.about-heading');
   if (headingEl) headingEl.innerHTML = a.heading.replace('\n', '<br>');
-  setHTML('.about-text:nth-of-type(1)', a.bio1);
-  setHTML('.about-text:nth-of-type(2)', a.bio2);
+
+  const bioEls = document.querySelectorAll('.about-text');
+  if (bioEls[0]) bioEls[0].innerHTML = a.bio1;
+  if (bioEls[1]) bioEls[1].innerHTML = a.bio2;
 
   const grid = document.querySelector('.skills-grid');
   if (grid) {
@@ -89,7 +109,10 @@ function renderGallery(items) {
   if (!grid) return;
 
   grid.innerHTML = items.map(item => `
-    <div class="masonry-item reveal" data-category="${item.category}" data-caption="${item.caption}" data-src="${item.src}">
+    <div class="masonry-item reveal"
+         data-category="${item.category}"
+         data-caption="${item.caption}"
+         data-src="${item.src}">
       ${item.src
         ? `<img src="${item.src}" alt="${item.caption}">`
         : `<div class="photo-placeholder"></div>`}
@@ -104,7 +127,10 @@ function renderGallery(items) {
 // ── CONTACT ──
 function renderContact(c) {
   const emailEl = document.querySelector('.contact-email');
-  if (emailEl) { emailEl.href = `mailto:${c.email}`; emailEl.textContent = c.email; }
+  if (emailEl) {
+    emailEl.href        = `mailto:${c.email}`;
+    emailEl.textContent = c.email;
+  }
 
   const links = document.querySelectorAll('.footer-links a');
   const map   = ['linkedin', 'github', 'resume'];
@@ -117,12 +143,6 @@ function setText(selector, text) {
   if (el) el.textContent = text;
 }
 
-function setHTML(selector, html) {
-  const el = document.querySelector(selector);
-  if (el) el.innerHTML = html;
-}
-
-// ── RE-INIT REVEAL & BARS after dynamic render ──
 function initReveal() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
@@ -149,5 +169,4 @@ function initStackBars() {
   document.querySelectorAll('.project-card').forEach(card => barObserver.observe(card));
 }
 
-// Kick everything off
 loadContent();

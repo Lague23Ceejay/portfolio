@@ -22,7 +22,7 @@
 </head>
 <body>
 
-  <!-- Background layers (painted by background.js) -->
+  <!-- Background layers -->
   <canvas id="bg-canvas"></canvas>
   <div id="grid-overlay"></div>
 
@@ -44,15 +44,19 @@
   <section id="hero">
     <div class="hero-gradient"></div>
     <div class="hero-gradient-2"></div>
-    <p class="hero-eyebrow">Portfolio · Information Systems</p>
+
+    <!-- Profile image (populated by load-content.js) -->
+    <div class="hero-profile">
+      <img id="hero-profile-img" class="hero-profile-img frame-circle" src="" alt="Profile photo" style="display:none"/>
+      <div id="hero-profile-placeholder" class="hero-profile-placeholder frame-circle" style="display:none"></div>
+    </div>
+
+    <p class="hero-eyebrow"></p>
     <h1 class="hero-name">
-      <span class="line-1">Christian John</span><br>
-      <span class="line-2">K. Lague</span>
+      <span class="line-1"></span><br>
+      <span class="line-2"></span>
     </h1>
-    <p class="hero-title">
-      <span>Bachelor of Science in Information Systems</span><br>
-      Building systems that matter · Davao, Philippines
-    </p>
+    <p class="hero-title"></p>
     <div class="hero-cta">
       <a href="#projects" class="btn btn-primary">View Work</a>
       <a href="#contact"  class="btn btn-outline">Get in Touch</a>
@@ -95,8 +99,6 @@
       <h2 class="gallery-heading">Memories &amp; Milestones</h2>
       <p class="gallery-sub">A visual archive of the moments that shaped my college experience.</p>
     </div>
-
-    <!-- Filter Tabs -->
     <div class="gallery-filters reveal">
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="Org Life">Org Life</button>
@@ -105,7 +107,6 @@
       <button class="filter-btn" data-filter="Academics">Academics</button>
       <button class="filter-btn" data-filter="Friends">Friends</button>
     </div>
-
     <!-- Rendered by js/load-content.js -->
     <div class="masonry-grid"></div>
   </section>
@@ -114,7 +115,7 @@
   <div class="lightbox" id="lightbox">
     <div class="lightbox-inner">
       <button class="lightbox-close" id="lightbox-close">✕</button>
-      <img class="lightbox-img" id="lightbox-img" src="" alt="Gallery photo" style="display:none;"/>
+      <img class="lightbox-img" id="lightbox-img" src="" alt="Gallery photo" style="display:none"/>
       <div class="lightbox-placeholder">Add your photo to see it here</div>
       <div class="lightbox-info">
         <p class="lightbox-caption" id="lightbox-caption"></p>
@@ -201,6 +202,7 @@
         <button class="admin-tab" data-tab="projects">Projects</button>
         <button class="admin-tab" data-tab="gallery">Gallery</button>
         <button class="admin-tab" data-tab="contact">Contact</button>
+        <button class="admin-tab" data-tab="settings">Settings</button>
       </div>
       <div class="admin-content">
         <div class="admin-section active" id="section-hero"></div>
@@ -208,6 +210,7 @@
         <div class="admin-section" id="section-projects"></div>
         <div class="admin-section" id="section-gallery"></div>
         <div class="admin-section" id="section-contact"></div>
+        <div class="admin-section" id="section-settings"></div>
       </div>
     </div>
   </div>
@@ -222,7 +225,7 @@
     </div>
   </footer>
 
-  <!-- JS — QRCode library must come before qrcode.js -->
+  <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/background.js"></script>
