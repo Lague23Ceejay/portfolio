@@ -2,112 +2,92 @@
 
 A modular single-page portfolio built with HTML, CSS, and vanilla JavaScript.
 
-## Project Overview
+## Overview
 
-This portfolio is structured by feature rather than by page, with separate CSS and JS modules for each major section. The goal is a clean, maintainable project where styles and behavior are isolated by component.
+This project organizes styles and behavior by feature (components) so each section is isolated and easy to maintain.
 
-## File Structure
+## File structure (high level)
 
-- `index.html` — main page layout and content.
-- `css/` — styling modules for each section:
-  - `base.css` — global layout, typography, responsive base styles, and utility classes.
-  - `nav.css` — navigation bar styling and hamburger menu appearance.
-  - `hero.css` — hero section styles and text-gradient effects.
-  - `about.css` — about section layout and text styles.
-  - `projects.css` — project cards and grid layout.
-  - `contact.css` — contact section, email link, QR code panel, and related form elements.
-  - `footer.css` — footer styling.
+- `index.html` — main page and markup.
+- `data.json` — optional content/storage for demos.
+- `package.json` — project metadata (if used for tooling).
+- `vercel.json` — Vercel deployment config.
+- `api/` — serverless endpoint(s); e.g. `save-content.js`.
+- `assets/` — static assets (images, icons).
+- `css/` — component CSS files:
+  - `base.css`, `nav.css`, `hero.css`, `about.css`, `projects.css`, `contact.css`, `footer.css`, `admin.css`, `gallery.css`, `theme-switcher.css`, `themes.css`
 - `js/` — interaction modules:
-  - `Nav.js` — mobile hamburger toggle and nav link closing behavior.
-  - `background.js` — animated canvas background with moving orbs, particles, and mouse spotlight.
-  - `qrcode.js` — generates and updates the QR code from the input URL.
-  - `reveal.js` — scroll-triggered fade-up animation for revealed elements.
+  - `admin.js`, `background.js`, `gallery.js`, `load-content.js`, `nav.js`, `qrcode.js`, `reveal.js`, `theme.js`
 
-## Modular Code Breakdown
+## Key features
 
-### HTML (`index.html`)
+- Animated canvas background (`js/background.js`).
+- Mobile-friendly navigation toggle (`js/nav.js`).
+- QR code generator for sharing links (`js/qrcode.js`).
+- Scroll reveal animations (`js/reveal.js`).
+- Gallery utilities and content loader scripts.
+- Simple serverless `api/save-content.js` for form or content saving (used when deployed).
 
-The page is composed of section blocks:
-- `#hero` — landing message, call-to-action buttons.
-- `#about` — profile summary and skills.
-- `#projects` — work examples displayed as cards.
-- `#contact` — contact CTA, email link, and QR code widget.
-- `footer` — copyright and quick links.
+## Usage
 
-Individual sections use semantic IDs and classes to connect with style and script modules.
+1. Open `index.html` in your browser for a local static preview.
+2. For a development server, use any static server (Live Server extension, `serve`, or similar). Example with `npm` + `serve`:
 
-### CSS Modules
+```powershell
+npm install -g serve
+serve . -p 3000
+```
 
-Each CSS file targets a specific component:
+3. The QR widget reads the input value and regenerates when you click the generate button.
 
-- `base.css`
-  - Defines base typography, colors, spacing, grid behavior, and responsive adjustments.
-  - Contains shared utility rules like `.reveal.visible` and mobile layout breakpoints.
+## Deployment
 
-- `nav.css`
-  - Styles the top navigation bar and mobile hamburger button.
-  - Uses `.nav-toggle.open` to animate the burger into an X when open.
+- This project can be deployed as a static site (Vercel recommended — `vercel` will detect `index.html`).
+- Serverless endpoints live under `api/` and will be used by Vercel/other serverless hosts.
 
-- `hero.css`
-  - Controls the hero section typographic layout.
-  - Applies gradient text using `background-clip: text` with `-webkit-background-clip` fallback.
+## Development notes
 
-- `about.css`, `projects.css`, `footer.css`
-  - Keep those sections separated so layout and spacing changes remain isolated.
+- CSS and JS are modular by feature; update the corresponding files under `css/` and `js/` when adding new sections.
+- Improve accessibility by adding ARIA attributes to the nav toggle and form elements.
 
-- `contact.css`
-  - Styles the contact section and QR widget.
-  - Includes the QR container, corner accents, and input panel.
+## Git workflow notes
 
-### JavaScript Modules
+- To iterate on a testing branch:
 
-- `Nav.js`
-  - Toggles the mobile menu state by adding/removing the `open` class on both the button and the nav list.
-  - Closes the menu automatically when a nav link is clicked.
-
-- `background.js`
-  - Draws a full-screen animated background on the `#bg-canvas` element.
-  - Uses requestAnimationFrame for smooth animation.
-  - Includes responsive particle count adjustments for mobile.
-
-- `qrcode.js`
-  - Uses the QRCode library to render a QR code inside `#qrcode`.
-  - Reads the value from `#portfolio-url` and regenerates the code.
-  - Initializes a default placeholder QR on page load.
-
-- `reveal.js`
-  - Uses Intersection Observer to add the `.visible` class to `.reveal` elements when they enter the viewport.
-  - Triggers staggered fade-up animations.
-
-## How to Use
-
-1. Open `index.html` in a browser.
-2. The nav and page animation scripts are loaded automatically at the end of the document.
-3. The QR code generator updates when you enter a URL and click `Generate QR`.
-
-## Notes
-
-- The project is built with plain HTML/CSS/JS and does not require a build step.
-- Styles are kept modular, so changes in one section will not unintentionally affect other sections.
-- Scripts are organized as separate modules by feature to make the code easy to maintain.
-
-## Recommended Improvements
-
-- Add a small build or lint step if the project expands further.
-- Move inline button handlers to JS entirely for cleaner separation of concerns.
-- Expand accessibility with improved labels and keyboard support for the nav toggle.
-
-
-# Go to testing branch
+```powershell
 git checkout testing-publish
-
-# Make changes, then push
+# make changes
 git add .
 git commit -m "testing new feature"
 git push
+```
 
-### Command line for when merging progress to main
+- Merge back to `main` when ready:
 
+```powershell
 git checkout main
 git merge testing-publish
 git push
+```
+
+---
+
+If you'd like, I can also:
+
+- add a short `Contributing` section and code style notes,
+- add a minimal `package.json` script for serving locally, or
+- run a quick link check to ensure referenced filenames match the repo.
+
+Before coding:     git pull origin main
+After coding:      git add . → git commit → git push
+Content changes:   always via admin panel only
+
+---
+
+Run the project locally using this command:
+
+- python -m http.server 8000
+
+then open:
+
+- http://127.0.0.1:8000
