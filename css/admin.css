@@ -34,6 +34,7 @@
   font-weight: 900;
   background: linear-gradient(135deg, #fff 0%, #888 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.5rem;
 }
@@ -399,40 +400,6 @@
   transition: transform 0.2s;
 }
 
-/* Mobile adjustments for admin panel */
-@media (max-width: 900px) {
-  .admin-body {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-  .admin-sidebar {
-    position: relative;
-    top: 0;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: row;
-    gap: 0.25rem;
-    overflow-x: auto;
-    align-items: center;
-  }
-  .admin-tab {
-    padding: 0.5rem 0.85rem;
-    white-space: nowrap;
-    font-size: 0.72rem;
-  }
-  .admin-content { padding: 1rem; }
-  .admin-section { max-width: 100%; }
-}
-
-@media (max-width: 480px) {
-  .admin-header { padding: 0.75rem 1rem; }
-  .admin-save-btn, .admin-close-btn { padding: 0.4rem 0.8rem; font-size: 0.68rem; }
-  .pin-btn { width: 48px; height: 48px; font-size: 1rem; }
-}
-
 .admin-card.collapsed .admin-card-toggle { transform: rotate(-90deg); }
 .admin-card.collapsed .admin-card-body   { display: none; }
 
@@ -482,58 +449,6 @@
 
 .admin-add-btn:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
 
-.gallery-batch-upload {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.75rem;
-  align-items: end;
-  margin-top: 0.75rem;
-}
-
-.gallery-batch-upload select,
-.gallery-batch-upload input[type="file"] {
-  width: 100%;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: var(--white);
-  padding: 0.75rem 0.9rem;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.82rem;
-  outline: none;
-}
-
-.gallery-upload-note {
-  font-size: 0.72rem;
-  color: var(--gray-3);
-  margin-top: 0.5rem;
-  line-height: 1.45;
-}
-
-.gallery-image-preview {
-  margin-top: 0.75rem;
-  width: 100%;
-  min-height: 130px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.02);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.gallery-image-preview img {
-  max-width: 100%;
-  max-height: 180px;
-  height: auto;
-  display: block;
-}
-
-.photo-placeholder {
-  width: 100%;
-  min-height: 130px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.06));
-}
-
 /* Stack row */
 .stack-admin-row {
   display: grid;
@@ -569,3 +484,71 @@
   .pin-btn        { width: 56px; height: 56px; }
   .stack-admin-row { grid-template-columns: 1fr 60px auto; }
 }
+
+/* ── FRAME TOGGLE ── */
+.frame-toggle {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.frame-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.1rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--gray-3);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.frame-btn:hover {
+  color: var(--white);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.frame-btn.active {
+  background: rgba(255,255,255,0.08);
+  border-color: var(--white);
+  color: var(--white);
+}
+
+.frame-preview {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+
+.frame-preview-circle { border-radius: 50%; }
+.frame-preview-square { border-radius: 3px; }
+
+/* ── PIN CHANGE (Settings tab) ── */
+.pin-change-box {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 1.5rem;
+}
+
+.pin-change-desc {
+  font-size: 0.8rem;
+  color: var(--gray-3);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.pin-change-status {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  min-height: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.pin-change-status.success { color: #6bcb77; }
+.pin-change-status.error   { color: #ff6b6b; }

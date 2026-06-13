@@ -2,7 +2,7 @@
 
 /* ============================================================
    background.js — Animated canvas background
-   Draws: base fill, aurora band, mouse spotlight, orbs, particles
+   Reads window.themeOrbColor (set by theme.js) for accent tinting
    ============================================================ */
 
 const canvas = document.getElementById('bg-canvas');
@@ -17,20 +17,17 @@ function resize() {
 }
 resize();
 window.addEventListener('resize', resize);
-window.addEventListener('mousemove', e => {
-  mouse.x = e.clientX;
-  mouse.y = e.clientY;
-});
+window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 // ── Orbs ──
 const orbs = [
-  { x: 0.75, y: 0.20, r: 0.38, speed: 0.00018, angle: 0,   drift: 0.06, opacity: 0.10 },
-  { x: 0.15, y: 0.70, r: 0.28, speed: 0.00013, angle: 2.1, drift: 0.08, opacity: 0.07 },
-  { x: 0.50, y: 0.50, r: 0.20, speed: 0.00022, angle: 4.5, drift: 0.04, opacity: 0.05 },
-  { x: 0.85, y: 0.80, r: 0.15, speed: 0.00030, angle: 1.0, drift: 0.10, opacity: 0.06 },
+  { x: 0.75, y: 0.20, r: 0.38, speed: 0.00018, angle: 0,   drift: 0.06, opacity: 0.08 },
+  { x: 0.15, y: 0.70, r: 0.28, speed: 0.00013, angle: 2.1, drift: 0.08, opacity: 0.06 },
+  { x: 0.50, y: 0.50, r: 0.20, speed: 0.00022, angle: 4.5, drift: 0.04, opacity: 0.04 },
+  { x: 0.85, y: 0.80, r: 0.15, speed: 0.00030, angle: 1.0, drift: 0.10, opacity: 0.05 },
 ];
 
-// ── Particles (fewer on mobile for performance) ──
+// ── Particles ──
 const isMobile     = window.innerWidth < 600;
 const particleCount = isMobile ? 30 : 80;
 const particles = Array.from({ length: particleCount }, () => ({
@@ -39,28 +36,37 @@ const particles = Array.from({ length: particleCount }, () => ({
   size:         Math.random() * 1.2 + 0.3,
   speed:        Math.random() * 0.00008 + 0.00003,
   angle:        Math.random() * Math.PI * 2,
-  opacity:      Math.random() * 0.4 + 0.05,
+  opacity:      Math.random() * 0.35 + 0.05,
   twinkle:      Math.random() * Math.PI * 2,
   twinkleSpeed: Math.random() * 0.02 + 0.005,
 }));
 
 let t = 0;
 
+function getOrbColor() {
+  return window.themeOrbColor || [255, 255, 255];
+}
+
 function draw() {
   t++;
   ctx.clearRect(0, 0, W, H);
 
-  // Base background
-  ctx.fillStyle = '#0a0a0a';
+  // Get theme bg color from CSS variable
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--black').trim() || '#0a0a0a';
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
+
+  const [or, og, ob] = getOrbColor();
 
   // Aurora band
   const auroraY = H * 0.45 + Math.sin(t * 0.0005) * H * 0.08;
   const aurora  = ctx.createLinearGradient(0, auroraY - H * 0.25, 0, auroraY + H * 0.25);
+  const aAlpha1 = 0.02 + Math.sin(t * 0.0008) * 0.01;
+  const aAlpha2 = 0.015 + Math.cos(t * 0.0011) * 0.008;
   aurora.addColorStop(0,   'rgba(0,0,0,0)');
-  aurora.addColorStop(0.3, `rgba(255,255,255,${0.025 + Math.sin(t * 0.0008) * 0.012})`);
-  aurora.addColorStop(0.5, `rgba(200,200,200,${0.018 + Math.cos(t * 0.0011) * 0.009})`);
-  aurora.addColorStop(0.7, `rgba(255,255,255,${0.025 + Math.sin(t * 0.0008 + 1) * 0.012})`);
+  aurora.addColorStop(0.3, `rgba(${or},${og},${ob},${aAlpha1})`);
+  aurora.addColorStop(0.5, `rgba(${or},${og},${ob},${aAlpha2})`);
+  aurora.addColorStop(0.7, `rgba(${or},${og},${ob},${aAlpha1})`);
   aurora.addColorStop(1,   'rgba(0,0,0,0)');
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
@@ -70,8 +76,8 @@ function draw() {
 
   // Mouse spotlight
   const spot = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, W * 0.28);
-  spot.addColorStop(0,   'rgba(255,255,255,0.04)');
-  spot.addColorStop(0.4, 'rgba(255,255,255,0.012)');
+  spot.addColorStop(0,   `rgba(${or},${og},${ob},0.05)`);
+  spot.addColorStop(0.4, `rgba(${or},${og},${ob},0.015)`);
   spot.addColorStop(1,   'rgba(0,0,0,0)');
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
@@ -87,8 +93,8 @@ function draw() {
     const r     = o.r * Math.min(W, H);
     const g     = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
     const pulse = o.opacity + Math.sin(t * 0.0015 + o.angle) * o.opacity * 0.3;
-    g.addColorStop(0,   `rgba(255,255,255,${pulse})`);
-    g.addColorStop(0.4, `rgba(200,200,200,${pulse * 0.3})`);
+    g.addColorStop(0,   `rgba(${or},${og},${ob},${pulse})`);
+    g.addColorStop(0.4, `rgba(${or},${og},${ob},${pulse * 0.25})`);
     g.addColorStop(1,   'rgba(0,0,0,0)');
     ctx.save();
     ctx.globalCompositeOperation = 'screen';
@@ -108,7 +114,7 @@ function draw() {
     const alpha = p.opacity * (0.6 + Math.sin(p.twinkle) * 0.4);
     ctx.save();
     ctx.globalCompositeOperation = 'screen';
-    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.fillStyle = `rgba(${or},${og},${ob},${alpha})`;
     ctx.beginPath();
     ctx.arc(px, py, p.size, 0, Math.PI * 2);
     ctx.fill();

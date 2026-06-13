@@ -1,0 +1,364 @@
+/* FILE: portfolio/css/themes.css */
+
+/* ============================================================
+   themes.css — 5 color schemes, applied via data-theme on <html>
+   ============================================================ */
+
+/* ── 1. MIDNIGHT (default) ── */
+:root,
+[data-theme="midnight"] {
+  --black:         #0a0a0a;
+  --white:         #f5f5f3;
+  --gray-1:        #1a1a1a;
+  --gray-2:        #2e2e2e;
+  --gray-3:        #555;
+  --gray-light:    #d0d0cc;
+  --accent:        #ffffff;
+  --accent-rgb:    255, 255, 255;
+  --accent-glow:   rgba(255,255,255,0.06);
+  --accent-muted:  rgba(255,255,255,0.10);
+  --accent-border: rgba(255,255,255,0.12);
+  --gradient-a:    #ffffff;
+  --gradient-b:    #666666;
+  --orb-color:     255, 255, 255;
+  --nav-bg:        rgba(10,10,10,0.88);
+  --card-bg:       rgba(255,255,255,0.02);
+  --card-hover:    rgba(255,255,255,0.04);
+}
+
+/* ── 2. OCEAN ── */
+[data-theme="ocean"] {
+  --black:         #06111f;
+  --white:         #deeefb;
+  --gray-1:        #0c1e35;
+  --gray-2:        #14304f;
+  --gray-3:        #3d6a8a;
+  --gray-light:    #82b8d6;
+  --accent:        #38bdf8;
+  --accent-rgb:    56,189,248;
+  --accent-glow:   rgba(56,189,248,0.08);
+  --accent-muted:  rgba(56,189,248,0.15);
+  --accent-border: rgba(56,189,248,0.22);
+  --gradient-a:    #deeefb;
+  --gradient-b:    #38bdf8;
+  --orb-color:     56,189,248;
+  --nav-bg:        rgba(6,17,31,0.90);
+  --card-bg:       rgba(56,189,248,0.04);
+  --card-hover:    rgba(56,189,248,0.08);
+}
+
+/* ── 3. FOREST ── */
+[data-theme="forest"] {
+  --black:         #060f0a;
+  --white:         #dff0e8;
+  --gray-1:        #0d1f14;
+  --gray-2:        #163324;
+  --gray-3:        #3a6b4e;
+  --gray-light:    #7ab898;
+  --accent:        #4ade80;
+  --accent-rgb:    74,222,128;
+  --accent-glow:   rgba(74,222,128,0.07);
+  --accent-muted:  rgba(74,222,128,0.14);
+  --accent-border: rgba(74,222,128,0.20);
+  --gradient-a:    #dff0e8;
+  --gradient-b:    #4ade80;
+  --orb-color:     74,222,128;
+  --nav-bg:        rgba(6,15,10,0.90);
+  --card-bg:       rgba(74,222,128,0.04);
+  --card-hover:    rgba(74,222,128,0.08);
+}
+
+/* ── 4. DUSK ── */
+[data-theme="dusk"] {
+  --black:         #0b0812;
+  --white:         #ece8f8;
+  --gray-1:        #17102a;
+  --gray-2:        #261a40;
+  --gray-3:        #6248a0;
+  --gray-light:    #a892d8;
+  --accent:        #a78bfa;
+  --accent-rgb:    167,139,250;
+  --accent-glow:   rgba(167,139,250,0.08);
+  --accent-muted:  rgba(167,139,250,0.15);
+  --accent-border: rgba(167,139,250,0.22);
+  --gradient-a:    #ece8f8;
+  --gradient-b:    #a78bfa;
+  --orb-color:     167,139,250;
+  --nav-bg:        rgba(11,8,18,0.90);
+  --card-bg:       rgba(167,139,250,0.04);
+  --card-hover:    rgba(167,139,250,0.08);
+}
+
+/* ── 5. EMBER ── */
+[data-theme="ember"] {
+  --black:         #0f0a04;
+  --white:         #f5efe6;
+  --gray-1:        #1e1508;
+  --gray-2:        #302012;
+  --gray-3:        #7a5a28;
+  --gray-light:    #c8a060;
+  --accent:        #fb923c;
+  --accent-rgb:    251,146,60;
+  --accent-glow:   rgba(251,146,60,0.08);
+  --accent-muted:  rgba(251,146,60,0.15);
+  --accent-border: rgba(251,146,60,0.22);
+  --gradient-a:    #f5efe6;
+  --gradient-b:    #fb923c;
+  --orb-color:     251,146,60;
+  --nav-bg:        rgba(15,10,4,0.90);
+  --card-bg:       rgba(251,146,60,0.04);
+  --card-hover:    rgba(251,146,60,0.08);
+}
+
+/* ============================================================
+   GLOBAL THEME APPLICATIONS
+   ============================================================ */
+
+/* ── Base ── */
+body {
+  background: var(--black);
+  color: var(--white);
+  transition: background 0.5s ease, color 0.4s ease;
+}
+
+/* ── Nav ── */
+nav {
+  background: var(--nav-bg) !important;
+  border-bottom: 1px solid var(--accent-border) !important;
+  transition: background 0.5s ease, border-color 0.4s ease;
+}
+
+.nav-logo {
+  background: linear-gradient(135deg, var(--gradient-a) 0%, var(--accent) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.nav-links a       { color: var(--gray-light); transition: color 0.3s; }
+.nav-links a:hover { color: var(--accent); }
+
+/* ── Hero ── */
+.hero-name .line-2 {
+  background: linear-gradient(135deg, var(--gradient-a) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-eyebrow { color: var(--gray-3); }
+.hero-title   { color: var(--gray-3); }
+.hero-title span { color: var(--gray-light); }
+.hero-scroll  { color: var(--gray-3); }
+.hero-scroll::before { background: var(--accent-border); }
+
+/* ── Buttons ── */
+.btn-primary {
+  background: var(--accent) !important;
+  color: var(--black) !important;
+}
+.btn-primary:hover { filter: brightness(1.12); }
+
+.btn-outline {
+  color: var(--white) !important;
+  border: 1px solid var(--accent-border) !important;
+}
+.btn-outline:hover { border-color: var(--accent) !important; }
+
+/* ── Section labels ── */
+.section-label {
+  color: var(--accent) !important;
+  letter-spacing: 0.25em;
+}
+.section-label::after { background: var(--accent-border) !important; }
+
+/* ── Section dividers ── */
+#about,
+#projects,
+#gallery,
+#contact {
+  border-top: 1px solid var(--accent-border) !important;
+}
+
+/* ── About ── */
+.about-heading { color: var(--white); }
+.about-text    { color: var(--gray-3); }
+.about-text strong { color: var(--gray-light); }
+
+.skill-tag {
+  border: 1px solid var(--accent-border) !important;
+  color: var(--gray-3);
+  background: var(--card-bg);
+  transition: all 0.25s;
+}
+.skill-tag:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: var(--accent-glow) !important;
+}
+
+/* ── Projects ── */
+.projects-note { color: var(--gray-3); }
+
+.project-grid {
+  gap: 1px;
+  background: var(--accent-border) !important;
+}
+
+.project-card {
+  background: var(--black) !important;
+  transition: background 0.3s;
+}
+.project-card:hover {
+  background: var(--card-hover) !important;
+}
+
+.project-card::before {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent) !important;
+}
+
+.project-num  { color: var(--gray-3); }
+.project-type { color: var(--gray-3); }
+.project-desc { color: var(--gray-3); }
+.project-hint { color: var(--gray-3); border-top-color: var(--accent-border) !important; }
+
+.project-status {
+  border-color: var(--accent-border) !important;
+  color: var(--gray-3);
+}
+.project-status--done {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.project-redacted { background: var(--accent-muted) !important; }
+
+.stack-label { color: var(--gray-3); }
+.stack-pct   { color: var(--accent-muted); }
+.stack-bar   { background: var(--accent-glow) !important; }
+.stack-fill  {
+  background: linear-gradient(90deg,
+    rgba(var(--accent-rgb), 0.3),
+    rgba(var(--accent-rgb), 0.85)
+  ) !important;
+}
+
+.project-arrow { color: var(--gray-3); }
+.project-card:hover .project-arrow { color: var(--accent); }
+
+/* ── Gallery ── */
+.gallery-heading { color: var(--white); }
+.gallery-sub     { color: var(--gray-3); }
+
+.filter-btn {
+  border: 1px solid var(--accent-border) !important;
+  color: var(--gray-3);
+  background: transparent;
+  transition: all 0.25s;
+}
+.filter-btn:hover {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+.filter-btn.active {
+  background: var(--accent) !important;
+  color: var(--black) !important;
+  border-color: var(--accent) !important;
+}
+
+.masonry-tag {
+  border-color: rgba(var(--accent-rgb), 0.4) !important;
+  color: rgba(var(--accent-rgb), 0.9) !important;
+}
+
+/* ── Contact ── */
+.contact-heading .gradient-text {
+  background: linear-gradient(135deg, var(--gradient-a) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.contact-sub   { color: var(--gray-3); }
+.contact-email {
+  color: var(--white);
+  border-bottom: 1px solid var(--accent-border) !important;
+  transition: border-color 0.3s;
+}
+.contact-email:hover { border-bottom-color: var(--accent) !important; }
+
+/* QR block */
+.qr-label { color: var(--gray-3); }
+.qr-wrapper { background: var(--white) !important; }
+.qr-corner  { border-color: var(--black) !important; }
+
+.qr-url-input-wrap label { color: var(--gray-3); }
+.qr-url-input-wrap input {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--accent-border) !important;
+  color: var(--white);
+}
+.qr-url-input-wrap input:focus {
+  border-color: var(--accent) !important;
+}
+
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--accent-border) !important;
+}
+.footer-copy   { color: var(--gray-3); }
+.footer-links a {
+  color: var(--gray-3);
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--accent) !important; }
+
+/* ── Profile image ── */
+.hero-profile-img {
+  border: 2px solid var(--accent-border) !important;
+  transition: border-color 0.3s;
+}
+.hero-profile-img:hover { border-color: var(--accent) !important; }
+
+/* ── Grid overlay tint ── */
+#grid-overlay {
+  background-image:
+    linear-gradient(rgba(var(--accent-rgb), 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.03) 1px, transparent 1px) !important;
+}
+
+/* ── Admin panel — theme-aware ── */
+#admin-panel,
+#admin-pin-overlay {
+  background: var(--black) !important;
+}
+.admin-header {
+  background: rgba(from var(--black) r g b / 0.95);
+  border-bottom: 1px solid var(--accent-border) !important;
+}
+.admin-sidebar { border-right: 1px solid var(--accent-border) !important; }
+.admin-tab.active {
+  border-left-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+.admin-card   { border-color: var(--accent-border) !important; }
+.admin-field input:focus,
+.admin-field textarea:focus { border-color: var(--accent) !important; }
+.admin-save-btn {
+  background: var(--accent) !important;
+  color: var(--black) !important;
+}
+.pin-dot.filled {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+/* ── Global transitions ── */
+nav, section, footer, .btn, .skill-tag,
+.project-card, .project-grid, .stack-fill,
+.filter-btn, .section-label, .contact-email,
+.hero-profile-img, .admin-card {
+  transition-property: background, border-color, color, filter, opacity;
+  transition-duration: 0.4s;
+  transition-timing-function: ease;
+}

@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 
   <!-- CSS Modules -->
+  <link rel="stylesheet" href="css/themes.css"/>
   <link rel="stylesheet" href="css/base.css"/>
   <link rel="stylesheet" href="css/nav.css"/>
   <link rel="stylesheet" href="css/hero.css"/>
@@ -19,6 +20,7 @@
   <link rel="stylesheet" href="css/gallery.css"/>
   <link rel="stylesheet" href="css/admin.css"/>
   <link rel="stylesheet" href="css/footer.css"/>
+  <link rel="stylesheet" href="css/theme-switcher.css"/>
 </head>
 <body>
 
@@ -45,7 +47,6 @@
     <div class="hero-gradient"></div>
     <div class="hero-gradient-2"></div>
 
-    <!-- Profile image (populated by load-content.js) -->
     <div class="hero-profile">
       <img id="hero-profile-img" class="hero-profile-img frame-circle" src="" alt="Profile photo" style="display:none"/>
       <div id="hero-profile-placeholder" class="hero-profile-placeholder frame-circle" style="display:none"></div>
@@ -88,7 +89,6 @@
       </div>
       <p class="projects-note reveal">Details coming soon — here's a peek at the stack.</p>
     </div>
-    <!-- Rendered by js/load-content.js -->
     <div class="project-grid"></div>
   </section>
 
@@ -107,7 +107,6 @@
       <button class="filter-btn" data-filter="Academics">Academics</button>
       <button class="filter-btn" data-filter="Friends">Friends</button>
     </div>
-    <!-- Rendered by js/load-content.js -->
     <div class="masonry-grid"></div>
   </section>
 
@@ -225,7 +224,8 @@
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <!-- Scripts — theme.js must load first -->
+  <script src="js/theme.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/background.js"></script>
