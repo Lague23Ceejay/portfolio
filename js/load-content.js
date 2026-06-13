@@ -135,6 +135,9 @@ function renderContact(c) {
   const links = document.querySelectorAll('.footer-links a');
   const map   = ['linkedin', 'github', 'resume'];
   links.forEach((a, i) => { if (map[i]) a.href = c[map[i]]; });
+
+  // Build QR from saved contact QR URL (admin-managed). If missing, use default placeholder.
+  try { if (typeof buildQR === 'function') buildQR(c.qrUrl || 'https://yourportfolio.com'); } catch (e) { /* ignore */ }
 }
 
 // ── HELPERS ──

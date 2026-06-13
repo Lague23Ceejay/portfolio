@@ -1,9 +1,5 @@
 /* FILE: portfolio/css/nav.css */
 
-/* ============================================================
-   nav.css — Navigation bar & hamburger menu
-   ============================================================ */
-
 nav {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -12,9 +8,9 @@ nav {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem 4rem;
-  background: rgba(10,10,10,0.85);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  /* No hardcoded colors — themes.css controls these */
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .nav-logo {
@@ -22,30 +18,48 @@ nav {
   font-weight: 900;
   font-size: 1.1rem;
   letter-spacing: 0.02em;
-  background: linear-gradient(135deg, #fff 0%, #888 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  /* Color set by themes.css */
+  cursor: default;
+  transition: transform 0.3s ease;
 }
 
+.nav-logo:hover { transform: scale(1.05); }
+
+/* ── NAV LINKS ── */
 .nav-links {
   display: flex;
   gap: 2.5rem;
   list-style: none;
 }
 
+.nav-links li { position: relative; }
+
 .nav-links a {
-  color: var(--gray-light);
   text-decoration: none;
   font-size: 0.8rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  transition: color 0.25s;
+  padding-bottom: 4px;
+  position: relative;
+  transition: color 0.25s ease;
 }
 
-.nav-links a:hover { color: var(--white); }
+/* Animated underline — slides in from left on hover */
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background: var(--accent, #fff);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-/* ── HAMBURGER BUTTON ── */
+.nav-links a:hover::after,
+.nav-links a.active::after { width: 100%; }
+
+/* ── HAMBURGER ── */
 .nav-toggle {
   display: none;
   flex-direction: column;
@@ -64,8 +78,8 @@ nav {
   display: block;
   width: 100%;
   height: 1px;
-  background: var(--white);
-  transition: transform 0.35s ease, opacity 0.25s ease;
+  background: var(--white, #f5f5f3);
+  transition: transform 0.35s ease, opacity 0.25s ease, background 0.4s;
   transform-origin: center;
 }
 

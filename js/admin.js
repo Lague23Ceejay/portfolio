@@ -205,9 +205,34 @@ function removeProfileImage() {
 function buildAboutForm(a) {
   document.getElementById('section-about').innerHTML = `
     <h2 class="admin-section-title">About</h2>
-    ${field('Heading (use \\n for line break)', 'about-heading', a.heading)}
-    ${field('Bio paragraph 1 (HTML allowed)',   'about-bio1',    a.bio1, 'textarea')}
-    ${field('Bio paragraph 2 (HTML allowed)',   'about-bio2',    a.bio2, 'textarea')}
+    ${field('Heading (use \\n+ for line break)', 'about-heading', a.heading)}
+
+    <div class="admin-field">
+      <label>Bio paragraph 1 (HTML allowed)</label>
+      <div class="rte-toolbar" data-target="about-bio1">
+        <button type="button" class="rte-btn" data-cmd="bold">B</button>
+        <button type="button" class="rte-btn" data-cmd="italic">I</button>
+        <button type="button" class="rte-btn" data-cmd="underline">U</button>
+        <button type="button" class="rte-btn" data-cmd="link">Link</button>
+        <button type="button" class="rte-btn" data-cmd="clear">Clear</button>
+        <button type="button" class="rte-btn" data-cmd="expand">Expand</button>
+      </div>
+      <textarea id="about-bio1" rows="4">${escHtml(a.bio1 || '')}</textarea>
+    </div>
+
+    <div class="admin-field">
+      <label>Bio paragraph 2 (HTML allowed)</label>
+      <div class="rte-toolbar" data-target="about-bio2">
+        <button type="button" class="rte-btn" data-cmd="bold">B</button>
+        <button type="button" class="rte-btn" data-cmd="italic">I</button>
+        <button type="button" class="rte-btn" data-cmd="underline">U</button>
+        <button type="button" class="rte-btn" data-cmd="link">Link</button>
+        <button type="button" class="rte-btn" data-cmd="clear">Clear</button>
+        <button type="button" class="rte-btn" data-cmd="expand">Expand</button>
+      </div>
+      <textarea id="about-bio2" rows="4">${escHtml(a.bio2 || '')}</textarea>
+    </div>
+
     <div class="admin-field">
       <label>Skills</label>
       <div class="skills-admin-list" id="skills-list">
@@ -215,7 +240,89 @@ function buildAboutForm(a) {
       </div>
       <button class="admin-add-btn" onclick="addSkill()">+ Add Skill</button>
     </div>`;
+
   bindRemoveSkill();
+  bindRteToolbars();
+}
+
+// ── Rich Text Editor helpers ──
+function bindRteToolbars() {
+  document.querySelectorAll('.rte-toolbar').forEach(toolbar => {
+    const target = toolbar.dataset.target;
+    toolbar.querySelectorAll('[data-cmd]').forEach(btn => {
+      btn.addEventListener('click', () => rteToolbarAction(target, btn.dataset.cmd));
+    });
+  });
+}
+
+function rteToolbarAction(targetId, cmd) {
+  const ta = document.getElementById(targetId);
+  if (!ta) return;
+  if (cmd === 'bold')      return wrapSelection(targetId, '<strong>','</strong>');
+  if (cmd === 'italic')    return wrapSelection(targetId, '<em>','</em>');
+  if (cmd === 'underline') return wrapSelection(targetId, '<u>','</u>');
+  if (cmd === 'link') {
+    const sel = getSelectionTextFromTextarea(ta);
+    const url = prompt('Enter URL (include https://)');
+    if (!url) return;
+    wrapSelection(targetId, `<a href="${escHtml(url)}">`, '</a>');
+    return;
+  }
+  if (cmd === 'clear') {
+    ta.value = ta.value.replace(/<[^>]+>/g, '');
+    return;
+  }
+  if (cmd === 'expand') return openRteModal(targetId);
+}
+
+function wrapSelection(id, openTag, closeTag) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = el.selectionStart;
+  const end   = el.selectionEnd;
+  const sel   = el.value.substring(start, end) || '';
+  const newText = openTag + sel + closeTag;
+  el.setRangeText(newText, start, end, 'end');
+  el.focus();
+}
+
+function getSelectionTextFromTextarea(ta) {
+  return ta.value.substring(ta.selectionStart, ta.selectionEnd);
+}
+
+function openRteModal(targetId) {
+  let modal = document.getElementById('rte-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'rte-modal';
+    modal.innerHTML = `
+      <div class="rte-modal-inner">
+        <div class="rte-modal-toolbar">
+          <button type="button" data-cmd="bold">B</button>
+          <button type="button" data-cmd="italic">I</button>
+          <button type="button" data-cmd="underline">U</button>
+          <button type="button" data-cmd="link">Link</button>
+          <button type="button" id="rte-save">Save</button>
+          <button type="button" id="rte-cancel">Cancel</button>
+        </div>
+        <div id="rte-edit" contenteditable="true" class="rte-editable"></div>
+      </div>`;
+    document.body.appendChild(modal);
+
+    modal.querySelectorAll('.rte-modal-toolbar [data-cmd]').forEach(b => {
+      b.addEventListener('click', () => document.execCommand(b.dataset.cmd, false, null));
+    });
+    modal.querySelector('#rte-save').addEventListener('click', () => {
+      const content = modal.querySelector('#rte-edit').innerHTML;
+      modal.dataset.target && (document.getElementById(modal.dataset.target).value = content);
+      modal.style.display = 'none';
+    });
+    modal.querySelector('#rte-cancel').addEventListener('click', () => { modal.style.display = 'none'; });
+  }
+  const ta = document.getElementById(targetId);
+  modal.dataset.target = targetId;
+  modal.querySelector('#rte-edit').innerHTML = ta.value || '';
+  modal.style.display = 'flex';
 }
 
 function skillRow(value, i) {
@@ -375,7 +482,8 @@ function buildContactForm(c) {
     ${field('Email address', 'contact-email',    c.email)}
     ${field('LinkedIn URL',  'contact-linkedin', c.linkedin)}
     ${field('GitHub URL',    'contact-github',   c.github)}
-    ${field('Resume URL',    'contact-resume',   c.resume)}`;
+    ${field('Resume URL',    'contact-resume',   c.resume)}
+    ${field('QR URL (admin only)', 'contact-qr', c.qrUrl || '')}`;
 }
 
 // ── SETTINGS ──
@@ -524,7 +632,7 @@ function collectData() {
 
   const contact = {
     email: val('contact-email'), linkedin: val('contact-linkedin'),
-    github: val('contact-github'), resume: val('contact-resume'),
+    github: val('contact-github'), resume: val('contact-resume'), qrUrl: val('contact-qr'),
   };
 
   return { _pin: currentData?._pin || '', hero, about, projects, gallery, contact };

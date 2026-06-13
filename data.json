@@ -78,6 +78,7 @@
     "email": "christian@email.com",
     "linkedin": "#",
     "github": "#",
-    "resume": "#"
+    "resume": "#",
+    "qrUrl": "https://yourportfolio.vercel.app"
   }
 }

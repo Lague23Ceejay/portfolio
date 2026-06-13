@@ -1,0 +1,153 @@
+/* FILE: portfolio/css/theme-overrides.css */
+/* ============================================================
+   theme-overrides.css — Visual override rules
+   Loaded LAST so these win over all other stylesheets.
+   Variables come from themes.css (loaded first).
+   ============================================================ */
+
+/* ── Body ── */
+body {
+  background: var(--black);
+  color: var(--white);
+  transition: background 0.5s ease, color 0.4s ease;
+}
+
+/* ── Nav ── */
+nav {
+  background: var(--nav-bg) !important;
+  border-bottom: 1px solid var(--accent-border) !important;
+}
+
+.nav-logo {
+  background: linear-gradient(135deg, var(--gradient-a) 0%, var(--accent) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.nav-links a         { color: var(--gray-light) !important; }
+.nav-links a:hover   { color: var(--accent) !important; }
+.nav-links a::after  { background: var(--accent) !important; }
+
+/* ── Hero ── */
+.hero-name .line-2 {
+  background: linear-gradient(135deg, var(--gradient-a) 0%, var(--accent) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* ── Buttons ── */
+.btn-primary { background: var(--accent) !important; color: var(--black) !important; }
+.btn-outline { border-color: var(--accent-border) !important; }
+.btn-outline:hover { border-color: var(--accent) !important; }
+
+/* ── Section labels ── */
+.section-label { color: var(--accent) !important; }
+.section-label::after { background: var(--accent-border) !important; }
+
+/* ── Section borders ── */
+#about, #projects, #gallery, #contact {
+  border-top-color: var(--accent-border) !important;
+}
+
+/* ── Skills ── */
+.skill-tag {
+  border-color: var(--accent-border) !important;
+  background: var(--card-bg) !important;
+}
+.skill-tag:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: var(--accent-glow) !important;
+}
+
+/* ── Projects ── */
+.project-grid      { background: var(--accent-border) !important; }
+.project-card      { background: var(--gray-1) !important; border-color: var(--accent-border) !important; }
+.project-card:hover {
+  background: var(--card-hover) !important;
+  border-color: rgba(var(--accent-rgb), 0.3) !important;
+  box-shadow: 0 20px 60px rgba(var(--accent-rgb), 0.12), 0 8px 24px rgba(0,0,0,0.4) !important;
+}
+.project-card::before {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent) !important;
+}
+.project-status--done {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+.project-hint     { border-top-color: var(--accent-border) !important; }
+.project-redacted { background: var(--accent-muted) !important; }
+.stack-bar        { background: var(--accent-glow) !important; }
+.stack-fill {
+  background: linear-gradient(90deg,
+    rgba(var(--accent-rgb), 0.3),
+    rgba(var(--accent-rgb), 0.85)
+  ) !important;
+}
+.project-card:hover .project-arrow { color: var(--accent) !important; }
+
+/* ── Gallery ── */
+.filter-btn { border-color: var(--accent-border) !important; }
+.filter-btn:hover { color: var(--accent) !important; border-color: var(--accent) !important; }
+.filter-btn.active {
+  background: var(--accent) !important;
+  color: var(--black) !important;
+  border-color: var(--accent) !important;
+}
+.masonry-item:hover {
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5),
+              0 0 0 1px rgba(var(--accent-rgb), 0.2) !important;
+}
+.masonry-tag {
+  border-color: rgba(var(--accent-rgb), 0.4) !important;
+  color: rgba(var(--accent-rgb), 0.9) !important;
+}
+
+/* ── Contact ── */
+.contact-heading .gradient-text {
+  background: linear-gradient(135deg, var(--gradient-a) 0%, var(--accent) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+.contact-email { border-bottom-color: var(--accent-border) !important; }
+.contact-email:hover { border-bottom-color: var(--accent) !important; }
+
+/* ── QR ── */
+.qr-url-input-wrap input { border-color: var(--accent-border) !important; }
+.qr-url-input-wrap input:focus { border-color: var(--accent) !important; }
+
+/* ── Footer ── */
+footer { border-top-color: var(--accent-border) !important; }
+.footer-links a:hover { color: var(--accent) !important; }
+
+/* ── Profile image ── */
+.hero-profile-img { border-color: var(--accent-border) !important; }
+.hero-profile-img:hover { border-color: var(--accent) !important; }
+
+/* ── Grid overlay ── */
+#grid-overlay {
+  background-image:
+    linear-gradient(rgba(var(--accent-rgb), 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.03) 1px, transparent 1px) !important;
+}
+
+/* ── Admin ── */
+.admin-header  { border-bottom-color: var(--accent-border) !important; }
+.admin-sidebar { border-right-color: var(--accent-border) !important; }
+.admin-tab.active { border-left-color: var(--accent) !important; color: var(--accent) !important; }
+.admin-card   { border-color: var(--accent-border) !important; }
+.admin-save-btn { background: var(--accent) !important; color: var(--black) !important; }
+.admin-field input:focus,
+.admin-field textarea:focus { border-color: var(--accent) !important; }
+.pin-dot.filled { background: var(--accent) !important; border-color: var(--accent) !important; }
+
+/* ── Transitions ── */
+body, nav, .btn, .skill-tag, .project-card, .stack-fill,
+.filter-btn, .section-label, .contact-email, .hero-profile-img {
+  transition-property: background, border-color, color, box-shadow;
+  transition-duration: 0.4s;
+  transition-timing-function: ease;
+}

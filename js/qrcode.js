@@ -24,9 +24,11 @@ function updateQR() {
 }
 
 // Generate placeholder QR on page load
+// Generate placeholder QR on page load (will be overridden by load-content if data provides a URL)
 buildQR('https://yourportfolio.com');
 
-// Also trigger on Enter key inside the input
-document.getElementById('portfolio-url').addEventListener('keydown', e => {
-  if (e.key === 'Enter') updateQR();
-});
+// Attach Enter handler only if the input exists (admin workflows may remove it for visitors)
+const _pq = document.getElementById('portfolio-url');
+if (_pq) {
+  _pq.addEventListener('keydown', e => { if (e.key === 'Enter') updateQR(); });
+}

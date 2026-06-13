@@ -5,12 +5,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Christian John K. Lague — BSIS</title>
-
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 
-  <!-- CSS Modules -->
-  
+  <!-- CSS Modules — themes.css MUST be last to override all others -->
+  <link rel="stylesheet" href="css/themes.css"/>
   <link rel="stylesheet" href="css/base.css"/>
   <link rel="stylesheet" href="css/nav.css"/>
   <link rel="stylesheet" href="css/hero.css"/>
@@ -21,15 +19,14 @@
   <link rel="stylesheet" href="css/admin.css"/>
   <link rel="stylesheet" href="css/footer.css"/>
   <link rel="stylesheet" href="css/theme-switcher.css"/>
-  <link rel="stylesheet" href="css/themes.css"/>
+  <link rel="stylesheet" href="css/theme-overrides.css"/>
+
 </head>
 <body>
 
-  <!-- Background layers -->
   <canvas id="bg-canvas"></canvas>
   <div id="grid-overlay"></div>
 
-  <!-- ── NAV ── -->
   <nav>
     <div class="nav-logo">CJL</div>
     <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
@@ -43,16 +40,13 @@
     </ul>
   </nav>
 
-  <!-- ── HERO ── -->
   <section id="hero">
     <div class="hero-gradient"></div>
     <div class="hero-gradient-2"></div>
-
     <div class="hero-profile">
       <img id="hero-profile-img" class="hero-profile-img frame-circle" src="" alt="Profile photo" style="display:none"/>
       <div id="hero-profile-placeholder" class="hero-profile-placeholder frame-circle" style="display:none"></div>
     </div>
-
     <p class="hero-eyebrow"></p>
     <h1 class="hero-name">
       <span class="line-1"></span><br>
@@ -66,13 +60,10 @@
     <div class="hero-scroll">Scroll to explore</div>
   </section>
 
-  <!-- ── ABOUT ── -->
   <section id="about">
     <p class="section-label reveal">01 — About</p>
     <div class="about-grid">
-      <div class="reveal">
-        <h2 class="about-heading"></h2>
-      </div>
+      <div class="reveal"><h2 class="about-heading"></h2></div>
       <div class="reveal">
         <p class="about-text"></p>
         <p class="about-text"></p>
@@ -81,7 +72,6 @@
     </div>
   </section>
 
-  <!-- ── PROJECTS ── -->
   <section id="projects">
     <div class="projects-header reveal">
       <div>
@@ -93,7 +83,6 @@
     <div class="project-grid"></div>
   </section>
 
-  <!-- ── GALLERY ── -->
   <section id="gallery">
     <p class="section-label reveal">03 — College Journey</p>
     <div class="reveal">
@@ -111,7 +100,6 @@
     <div class="masonry-grid"></div>
   </section>
 
-  <!-- ── LIGHTBOX ── -->
   <div class="lightbox" id="lightbox">
     <div class="lightbox-inner">
       <button class="lightbox-close" id="lightbox-close">✕</button>
@@ -124,7 +112,6 @@
     </div>
   </div>
 
-  <!-- ── CONTACT + QR ── -->
   <section id="contact">
     <div class="reveal">
       <p class="section-label">04 — Contact</p>
@@ -132,10 +119,7 @@
         <span class="gradient-text">Let's</span><br>
         <span class="gradient-text">Connect.</span>
       </h2>
-      <p class="contact-sub">
-        Open to opportunities, collaborations,<br>
-        and interesting conversations.
-      </p>
+      <p class="contact-sub">Open to opportunities, collaborations,<br>and interesting conversations.</p>
       <a href="mailto:christian@email.com" class="contact-email">christian@email.com</a>
     </div>
     <div class="qr-block reveal">
@@ -147,25 +131,16 @@
         <div class="qr-corner br"></div>
         <div id="qrcode"></div>
       </div>
-      <div class="qr-url-input-wrap">
-        <label for="portfolio-url">Your Portfolio URL</label>
-        <input type="url" id="portfolio-url" placeholder="https://yourportfolio.com"/>
-        <button class="btn btn-outline" onclick="updateQR()" style="width:100%; margin-top:0.5rem;">
-          Generate QR
-        </button>
-      </div>
+        <!-- QR URL is managed in the admin only; visitors don't see the input -->
     </div>
   </section>
 
-  <!-- ── ADMIN PIN OVERLAY ── -->
   <div id="admin-pin-overlay">
     <p class="pin-logo">CJL</p>
     <p class="pin-label">Admin Access</p>
     <div class="pin-dots">
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
     </div>
     <div class="pin-pad">
       <button class="pin-btn" data-digit="1">1</button>
@@ -183,12 +158,9 @@
     <p class="pin-error" id="pin-error"></p>
   </div>
 
-  <!-- ── ADMIN PANEL ── -->
   <div id="admin-panel">
     <div class="admin-header">
-      <div>
-        <span class="admin-title">Admin Panel <span>Portfolio Editor</span></span>
-      </div>
+      <span class="admin-title">Admin Panel <span>Portfolio Editor</span></span>
       <div class="admin-actions">
         <span class="admin-status" id="admin-status"></span>
         <button class="admin-save-btn" id="admin-save-btn">Save Changes</button>
@@ -215,7 +187,6 @@
     </div>
   </div>
 
-  <!-- ── FOOTER ── -->
   <footer>
     <p class="footer-copy">© 2025 Christian John K. Lague — All rights reserved</p>
     <div class="footer-links">
@@ -225,16 +196,14 @@
     </div>
   </footer>
 
-  <!-- Scripts — theme.js must load first -->
   <script src="js/theme.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/background.js"></script>
-  <script src="js/load-content.js"></script>
-  <script src="js/qrcode.js"></script>
+    <script src="js/qrcode.js"></script>
+    <script src="js/load-content.js"></script>
   <script src="js/gallery.js"></script>
   <script src="js/reveal.js"></script>
   <script src="js/admin.js"></script>
-
 </body>
 </html>
