@@ -1,17 +1,22 @@
-/* FILE: portfolio/js/load-content.js */
+// load-content.js
+// Fetches data.json and renders all site content dynamically.
+// Projects section: colored redacted codename blocks + per-stack colored progress bars.
 
-/* ============================================================
-   load-content.js
-   Fetches data.json and renders all site content dynamically.
-   ============================================================ */
+const STACK_PALETTE = [
+  { bar: '#5DCAA5', block: '#5DCAA5' }, // teal   — stack[0]
+  { bar: '#7F77DD', block: '#7F77DD' }, // purple — stack[1]
+  { bar: '#85B7EB', block: '#85B7EB' }, // blue   — stack[2]
+  { bar: '#EF9F27', block: '#EF9F27' }, // amber  — stack[3]
+  { bar: '#ED93B1', block: '#ED93B1' }, // pink   — stack[4]
+];
 
 async function loadContent() {
   let data;
   try {
-    const res = await fetch('/data.json?v=' + Date.now());
+    const res = await fetch('data.json');
     data = await res.json();
   } catch (e) {
-    console.error('Could not load data.json:', e);
+    console.error('Failed to load data.json', e);
     return;
   }
 
@@ -20,156 +25,169 @@ async function loadContent() {
   renderProjects(data.projects);
   renderGallery(data.gallery);
   renderContact(data.contact);
-
-  initReveal();
-  initStackBars();
 }
 
-// ── HERO ──
+// ─── Hero ────────────────────────────────────────────────────────────────────
+
 function renderHero(h) {
-  setText('#hero .hero-eyebrow',      h.eyebrow);
-  setText('#hero .hero-name .line-1', h.firstName);
-  setText('#hero .hero-name .line-2', h.lastName);
+  if (!h) return;
 
-  const titleEl = document.querySelector('#hero .hero-title');
-  if (titleEl) titleEl.innerHTML = `<span>${h.subtitle}</span><br>${h.location}`;
+  const eyebrow = document.querySelector('.hero-eyebrow');
+  const line1   = document.querySelector('.hero-name .line-1');
+  const line2   = document.querySelector('.hero-name .line-2');
+  const title   = document.querySelector('.hero-title');
 
-  // Profile image
+  if (eyebrow) eyebrow.textContent = h.eyebrow || '';
+  if (line1)   line1.textContent   = h.firstName || '';
+  if (line2)   line2.textContent   = h.lastName  || '';
+  if (title)   title.textContent   = h.subtitle  || '';
+
   const img         = document.getElementById('hero-profile-img');
   const placeholder = document.getElementById('hero-profile-placeholder');
-  const frame       = h.profileFrame || 'circle';
 
-  if (img) {
-    img.className = `hero-profile-img frame-${frame}`;
-    if (h.profileImage) {
-      img.src             = h.profileImage;
-      img.style.display   = 'block';
-      if (placeholder) placeholder.style.display = 'none';
-    } else {
-      img.style.display   = 'none';
-      if (placeholder) {
-        placeholder.className    = `hero-profile-placeholder frame-${frame}`;
-        placeholder.style.display = 'block';
-      }
-    }
+  if (h.profileImage) {
+    if (img) { img.src = h.profileImage; img.style.display = ''; }
+    if (placeholder) placeholder.style.display = 'none';
+  } else {
+    if (img) img.style.display = 'none';
+    if (placeholder) placeholder.style.display = '';
   }
 }
 
-// ── ABOUT ──
+// ─── About ───────────────────────────────────────────────────────────────────
+
 function renderAbout(a) {
-  const headingEl = document.querySelector('.about-heading');
-  if (headingEl) headingEl.innerHTML = a.heading.replace('\n', '<br>');
+  if (!a) return;
 
-  const bioEls = document.querySelectorAll('.about-text');
-  if (bioEls[0]) bioEls[0].innerHTML = a.bio1;
-  if (bioEls[1]) bioEls[1].innerHTML = a.bio2;
+  const heading = document.querySelector('.about-heading');
+  const texts   = document.querySelectorAll('.about-text');
+  const grid    = document.querySelector('.skills-grid');
 
-  const grid = document.querySelector('.skills-grid');
-  if (grid) {
+  if (heading) heading.innerHTML = (a.heading || '').replace(/\n/g, '<br>');
+  if (texts[0]) texts[0].innerHTML = a.bio1 || '';
+  if (texts[1]) texts[1].innerHTML = a.bio2 || '';
+
+  if (grid && Array.isArray(a.skills)) {
     grid.innerHTML = a.skills
-      .map(s => `<div class="skill-tag">${s}</div>`)
+      .map(s => `<span class="skill-tag">${s}</span>`)
       .join('');
   }
 }
 
-// ── PROJECTS ──
+// ─── Projects ────────────────────────────────────────────────────────────────
+
+function calcOverall(stack) {
+  if (!stack || !stack.length) return 0;
+  const sum = stack.reduce((acc, s) => acc + (s.pct || 0), 0);
+  return sum / stack.length;
+}
+
+function buildCodename(codename, stack) {
+  // Each character block is colored by the tech stack segment it maps to.
+  // Opacity scales with that stack's percentage (faint = low, opaque = 100%).
+  const chars      = (codename || '████').split('');
+  const segSize    = Math.ceil(chars.length / Math.max(stack.length, 1));
+
+  return chars.map((ch, i) => {
+    const si      = Math.min(Math.floor(i / segSize), stack.length - 1);
+    const color   = (STACK_PALETTE[si % STACK_PALETTE.length]).block;
+    const pct     = stack[si] ? stack[si].pct : 0;
+    const opacity = (0.20 + (pct / 100) * 0.80).toFixed(2);
+    const label   = stack[si] ? `${stack[si].name}: ${pct}%` : '';
+    return `<span class="redact-block" style="background:${color};opacity:${opacity};color:${color};" title="${label}">${ch}</span>`;
+  }).join('');
+}
+
+function buildStackBars(stack) {
+  return stack.map((s, i) => {
+    const color = (STACK_PALETTE[i % STACK_PALETTE.length]).bar;
+    return `
+      <div class="stack-row">
+        <span class="stack-label">${s.name}</span>
+        <div class="stack-bar-bg">
+          <div class="stack-bar-fill" style="width:${s.pct}%;background:${color};"></div>
+        </div>
+        <span class="stack-pct">${Number(s.pct).toFixed(1)}%</span>
+      </div>`;
+  }).join('');
+}
+
 function renderProjects(projects) {
   const grid = document.querySelector('.project-grid');
-  if (!grid) return;
+  if (!grid || !Array.isArray(projects)) return;
 
-  grid.innerHTML = projects.map(p => `
-    <div class="project-card reveal">
-      <div class="project-card-top">
-        <p class="project-num">${p.num}</p>
-        <span class="project-status ${p.statusDone ? 'project-status--done' : ''}">${p.status}</span>
-      </div>
-      <h3 class="project-title">Project <span class="project-redacted">${p.codename}</span></h3>
-      <p class="project-type">${p.type}</p>
-      <div class="project-stack">
-        ${p.stack.map(s => `
-          <div class="stack-item">
-            <div class="stack-label">
-              <span>${s.name}</span>
-              <span class="stack-pct">${s.pct}%</span>
-            </div>
-            <div class="stack-bar">
-              <div class="stack-fill" data-width="${s.pct}"></div>
-            </div>
+  grid.innerHTML = projects.map(p => {
+    const stack   = Array.isArray(p.stack) ? p.stack : [];
+    const overall = calcOverall(stack);
+
+    const statusClass = p.statusDone ? 'status-done' : 'status-wip';
+    const codenameHTML = buildCodename(p.codename, stack);
+    const barsHTML     = buildStackBars(stack);
+
+    return `
+      <div class="project-card reveal">
+        <div class="project-card-top">
+          <span class="project-num">${p.num || ''}</span>
+          <div class="project-meta">
+            <span class="project-type">${p.type || ''}</span>
+            <span class="project-status ${statusClass}">
+              <span class="status-dot"></span>${p.status || ''}
+            </span>
           </div>
-        `).join('')}
-      </div>
-      <p class="project-hint">${p.hint}</p>
-    </div>
-  `).join('');
+        </div>
+
+        <div class="project-codename">${codenameHTML}</div>
+
+        <p class="project-overall">
+          Overall progress:
+          <span class="project-overall-pct">${overall.toFixed(2)}%</span>
+        </p>
+
+        <p class="project-hint">${p.hint || ''}</p>
+
+        <div class="project-stack">
+          ${barsHTML}
+        </div>
+      </div>`;
+  }).join('');
 }
 
-// ── GALLERY ──
-function renderGallery(items) {
+// ─── Gallery ─────────────────────────────────────────────────────────────────
+
+function renderGallery(gallery) {
   const grid = document.querySelector('.masonry-grid');
-  if (!grid) return;
+  if (!grid || !Array.isArray(gallery)) return;
 
-  grid.innerHTML = items.map(item => `
-    <div class="masonry-item reveal"
-         data-category="${item.category}"
-         data-caption="${item.caption}"
-         data-src="${item.src}">
+  grid.innerHTML = gallery.map((item, idx) => `
+    <div class="masonry-item reveal" data-category="${item.category || ''}" data-index="${idx}">
       ${item.src
-        ? `<img src="${item.src}" alt="${item.caption}">`
-        : `<div class="photo-placeholder"></div>`}
-      <div class="masonry-overlay">
-        <p class="masonry-caption">${item.caption}</p>
-        <span class="masonry-tag">${item.category}</span>
+        ? `<img src="${item.src}" alt="${item.caption || ''}" loading="lazy"/>`
+        : `<div class="gallery-placeholder"></div>`}
+      <div class="masonry-info">
+        <p class="masonry-caption">${item.caption || ''}</p>
+        <span class="masonry-tag">${item.category || ''}</span>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-// ── CONTACT ──
+// ─── Contact ─────────────────────────────────────────────────────────────────
+
 function renderContact(c) {
+  if (!c) return;
+
   const emailEl = document.querySelector('.contact-email');
-  if (emailEl) {
+  if (emailEl && c.email) {
     emailEl.href        = `mailto:${c.email}`;
     emailEl.textContent = c.email;
   }
 
   const links = document.querySelectorAll('.footer-links a');
   const map   = ['linkedin', 'github', 'resume'];
-  links.forEach((a, i) => { if (map[i]) a.href = c[map[i]]; });
+  links.forEach((a, i) => { if (c[map[i]]) a.href = c[map[i]]; });
 
-  // Build QR from saved contact QR URL (admin-managed). If missing, use default placeholder.
-  try { if (typeof buildQR === 'function') buildQR(c.qrUrl || 'https://yourportfolio.com'); } catch (e) { /* ignore */ }
+  if (c.qrUrl && window.generateQR) window.generateQR(c.qrUrl);
 }
 
-// ── HELPERS ──
-function setText(selector, text) {
-  const el = document.querySelector(selector);
-  if (el) el.textContent = text;
-}
+// ─── Boot ────────────────────────────────────────────────────────────────────
 
-function initReveal() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('visible'), i * 80);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-}
-
-function initStackBars() {
-  const barObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.querySelectorAll('.stack-fill').forEach(fill => {
-          setTimeout(() => { fill.style.width = fill.dataset.width + '%'; }, 300);
-        });
-        barObserver.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.2 });
-  document.querySelectorAll('.project-card').forEach(card => barObserver.observe(card));
-}
-
-loadContent();
+document.addEventListener('DOMContentLoaded', loadContent);

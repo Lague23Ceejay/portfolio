@@ -1,674 +1,559 @@
-/* FILE: portfolio/js/admin.js */
+// admin.js
+// PIN-gated admin panel. Projects tab includes per-stack sliders
+// that update overall % and codename color preview in real time.
 
-/* ============================================================
-   admin.js — Admin panel
-   Features: PIN gate, Hero/About/Projects/Gallery/Contact editors,
-             Profile image upload, PIN change with SHA-256 hashing
-   ============================================================ */
+(function () {
+  'use strict';
 
-// ── FALLBACK PIN (used only if no hash stored in data.json yet) ──
-const DEFAULT_PIN = '1234';
+  // ── Constants ──────────────────────────────────────────────────────────────
 
-// ── STATE ──
-let currentPin    = '';
-let currentData   = null;
-let storedPinHash = '';
+  const PIN_KEY      = '_pin';
+  const SAVE_URL     = '/api/save-content';
+  const OPEN_COMBO   = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown']; // 4-key cheat
+  const MAX_ATTEMPTS = 5;
 
-// ── ELEMENTS ──
-const pinOverlay  = document.getElementById('admin-pin-overlay');
-const adminPanel  = document.getElementById('admin-panel');
-const pinDots     = document.querySelectorAll('.pin-dot');
-const pinError    = document.getElementById('pin-error');
-const adminStatus = document.getElementById('admin-status');
+  const STACK_PALETTE = [
+    '#5DCAA5', // teal
+    '#7F77DD', // purple
+    '#85B7EB', // blue
+    '#EF9F27', // amber
+    '#ED93B1', // pink
+  ];
 
-// ── SHA-256 HASH ──
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str + 'cjl-salt'));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
+  // ── State ──────────────────────────────────────────────────────────────────
 
-// ── LOAD PIN HASH from data.json on page load ──
-async function loadPinHash() {
-  try {
-    const res  = await fetch('/data.json?v=' + Date.now());
-    const data = await res.json();
-    storedPinHash = data._pin || await sha256(DEFAULT_PIN);
-  } catch {
-    storedPinHash = await sha256(DEFAULT_PIN);
-  }
-}
-loadPinHash();
+  let data          = {};
+  let pinBuffer     = '';
+  let attempts      = 0;
+  let comboProgress = 0;
+  let activeTab     = 'hero';
 
-// ── HASH WATCHER ──
-function checkHash() {
-  if (window.location.hash === '#admin') {
-    document.body.style.overflow = 'hidden';
-    pinOverlay.classList.add('open');
-    currentPin = '';
-    updateDots();
-    pinError.textContent = '';
-  }
-}
-window.addEventListener('hashchange', checkHash);
-checkHash();
+  // ── Boot ───────────────────────────────────────────────────────────────────
 
-// ── PIN PAD ──
-document.querySelectorAll('.pin-btn[data-digit]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (currentPin.length >= 4) return;
-    currentPin += btn.dataset.digit;
-    updateDots();
-    if (currentPin.length === 4) checkPin();
+  document.addEventListener('DOMContentLoaded', () => {
+    loadData().then(() => {
+      buildPinOverlay();
+      buildAdminPanel();
+      wireGlobalKeys();
+    });
   });
-});
 
-document.getElementById('pin-del-btn').addEventListener('click', () => {
-  currentPin = currentPin.slice(0, -1);
-  updateDots();
-  pinError.textContent = '';
-});
+  async function loadData() {
+    try {
+      const res = await fetch('data.json');
+      data = await res.json();
+    } catch (e) {
+      console.error('admin: failed to load data.json', e);
+      data = {};
+    }
+  }
 
-function updateDots() {
-  pinDots.forEach((dot, i) => dot.classList.toggle('filled', i < currentPin.length));
-}
+  // ── PIN overlay ────────────────────────────────────────────────────────────
 
-async function checkPin() {
-  const entered = await sha256(currentPin);
-  if (entered === storedPinHash) {
-    pinOverlay.classList.remove('open');
-    openAdmin();
-  } else {
-    pinError.textContent = 'Incorrect PIN — try again.';
-    currentPin = '';
-    updateDots();
-    pinDots.forEach(d => {
-      d.style.borderColor = '#ff6b6b';
-      setTimeout(() => d.style.borderColor = '', 600);
+  function buildPinOverlay() {
+    const overlay  = document.getElementById('admin-pin-overlay');
+    const dots     = overlay.querySelectorAll('.pin-dot');
+    const buttons  = overlay.querySelectorAll('.pin-btn[data-digit]');
+    const delBtn   = document.getElementById('pin-del-btn');
+    const errorEl  = document.getElementById('pin-error');
+
+    function updateDots() {
+      dots.forEach((d, i) => d.classList.toggle('filled', i < pinBuffer.length));
+    }
+
+    function handleDigit(d) {
+      if (pinBuffer.length >= 4) return;
+      pinBuffer += d;
+      updateDots();
+      if (pinBuffer.length === 4) verifyPin();
+    }
+
+    function verifyPin() {
+      const stored = data[PIN_KEY] || '';
+      sha256(pinBuffer).then(hash => {
+        if (!stored || hash === stored || pinBuffer === stored) {
+          overlay.style.display = 'none';
+          document.getElementById('admin-panel').style.display = 'flex';
+        } else {
+          attempts++;
+          errorEl.textContent = attempts >= MAX_ATTEMPTS
+            ? 'Too many attempts. Reload the page.'
+            : 'Incorrect PIN. Try again.';
+          pinBuffer = '';
+          updateDots();
+          if (attempts >= MAX_ATTEMPTS) {
+            overlay.querySelectorAll('.pin-btn').forEach(b => b.disabled = true);
+          }
+        }
+      });
+    }
+
+    buttons.forEach(b => b.addEventListener('click', () => handleDigit(b.dataset.digit)));
+    delBtn.addEventListener('click', () => {
+      pinBuffer = pinBuffer.slice(0, -1);
+      errorEl.textContent = '';
+      updateDots();
     });
   }
-}
 
-// ── OPEN ADMIN PANEL ──
-async function openAdmin() {
-  adminPanel.classList.add('open');
-  setStatus('Loading content…');
-  try {
-    const res   = await fetch('/data.json?v=' + Date.now());
-    currentData = await res.json();
-    buildForms(currentData);
-    setStatus('');
-  } catch (e) {
-    setStatus('Failed to load data.json', true);
-    console.error(e);
+  function wireGlobalKeys() {
+    const seq = [];
+    document.addEventListener('keydown', e => {
+      seq.push(e.key);
+      if (seq.length > OPEN_COMBO.length) seq.shift();
+      if (seq.join() === OPEN_COMBO.join()) {
+        document.getElementById('admin-pin-overlay').style.display = 'flex';
+      }
+    });
   }
-}
 
-// ── CLOSE ──
-document.getElementById('admin-close-btn').addEventListener('click', () => {
-  adminPanel.classList.remove('open');
-  document.body.style.overflow = '';
-  history.pushState('', document.title, window.location.pathname);
-});
+  // ── Admin panel shell ──────────────────────────────────────────────────────
 
-// ── TABS ──
-document.querySelectorAll('.admin-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  function buildAdminPanel() {
+    const tabs    = document.querySelectorAll('.admin-tab');
+    const saveBtn = document.getElementById('admin-save-btn');
+    const closeBtn= document.getElementById('admin-close-btn');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeTab = tab.dataset.tab;
+        renderActiveSection();
+      });
+    });
+
+    saveBtn.addEventListener('click', saveData);
+    closeBtn.addEventListener('click', () => {
+      document.getElementById('admin-panel').style.display = 'none';
+    });
+
+    renderActiveSection();
+  }
+
+  function renderActiveSection() {
     document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('section-' + tab.dataset.tab).classList.add('active');
-  });
-});
-
-// ── BUILD ALL FORMS ──
-function buildForms(data) {
-  buildHeroForm(data.hero);
-  buildAboutForm(data.about);
-  buildProjectsForm(data.projects);
-  buildGalleryForm(data.gallery);
-  buildContactForm(data.contact);
-  buildSettingsForm();
-}
-
-// ── HERO ──
-function buildHeroForm(h) {
-  document.getElementById('section-hero').innerHTML = `
-    <h2 class="admin-section-title">Hero</h2>
-    <div class="admin-field">
-      <label>Profile Photo</label>
-      <div class="img-upload-area" id="upload-area-profile">
-        <input type="file" id="file-input-profile" accept="image/*">
-        <div class="img-upload-icon">🖼️</div>
-        <p class="img-upload-label">Click or drag to upload</p>
-        <p class="img-upload-sub">JPG, PNG, WEBP — max 32MB</p>
-      </div>
-      <div class="img-preview-wrap" id="preview-wrap-profile" style="display:none">
-        <img class="img-preview" id="img-preview-profile" src="" alt="Profile preview">
-        <button class="img-preview-remove" onclick="removeProfileImage()">✕ Remove</button>
-      </div>
-      <p class="img-upload-status" id="upload-status-profile"></p>
-      <input type="hidden" id="hero-profileImage" value="${escHtml(h.profileImage || '')}">
-    </div>
-    <div class="admin-field">
-      <label>Photo Frame Shape</label>
-      <div class="frame-toggle">
-        <button class="frame-btn ${h.profileFrame !== 'square' ? 'active' : ''}" onclick="setFrame('circle')" id="frame-circle">
-          <span class="frame-preview frame-preview-circle"></span>Circle
-        </button>
-        <button class="frame-btn ${h.profileFrame === 'square' ? 'active' : ''}" onclick="setFrame('square')" id="frame-square">
-          <span class="frame-preview frame-preview-square"></span>Square
-        </button>
-      </div>
-      <input type="hidden" id="hero-profileFrame" value="${h.profileFrame || 'circle'}">
-    </div>
-    ${field('Eyebrow text',  'hero-eyebrow',   h.eyebrow)}
-    ${field('First name',    'hero-firstName',  h.firstName)}
-    ${field('Last name',     'hero-lastName',   h.lastName)}
-    ${field('Subtitle',      'hero-subtitle',   h.subtitle)}
-    ${field('Location line', 'hero-location',   h.location)}
-  `;
-  bindProfileImageUpload(h.profileImage);
-}
-
-function setFrame(shape) {
-  document.getElementById('hero-profileFrame').value = shape;
-  document.querySelectorAll('.frame-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('frame-' + shape).classList.add('active');
-}
-
-function bindProfileImageUpload(existingSrc) {
-  if (existingSrc) showImagePreview('profile', existingSrc);
-  const fileInput = document.getElementById('file-input-profile');
-  const area      = document.getElementById('upload-area-profile');
-  if (!fileInput || !area) return;
-  fileInput.addEventListener('change', e => {
-    if (e.target.files[0]) handleImageUpload('profile', e.target.files[0]);
-  });
-  area.addEventListener('dragover',  e => { e.preventDefault(); area.classList.add('dragover'); });
-  area.addEventListener('dragleave', () => area.classList.remove('dragover'));
-  area.addEventListener('drop', e => {
-    e.preventDefault(); area.classList.remove('dragover');
-    const f = e.dataTransfer.files[0];
-    if (f && f.type.startsWith('image/')) handleImageUpload('profile', f);
-  });
-}
-
-function removeProfileImage() {
-  document.getElementById('hero-profileImage').value             = '';
-  document.getElementById('preview-wrap-profile').style.display = 'none';
-  document.getElementById('upload-area-profile').style.display  = 'flex';
-  document.getElementById('file-input-profile').value           = '';
-  setUploadStatus('profile', '');
-}
-
-// ── ABOUT ──
-function buildAboutForm(a) {
-  document.getElementById('section-about').innerHTML = `
-    <h2 class="admin-section-title">About</h2>
-    ${field('Heading (use \\n+ for line break)', 'about-heading', a.heading)}
-
-    <div class="admin-field">
-      <label>Bio paragraph 1 (HTML allowed)</label>
-      <div class="rte-toolbar" data-target="about-bio1">
-        <button type="button" class="rte-btn" data-cmd="bold">B</button>
-        <button type="button" class="rte-btn" data-cmd="italic">I</button>
-        <button type="button" class="rte-btn" data-cmd="underline">U</button>
-        <button type="button" class="rte-btn" data-cmd="link">Link</button>
-        <button type="button" class="rte-btn" data-cmd="clear">Clear</button>
-        <button type="button" class="rte-btn" data-cmd="expand">Expand</button>
-      </div>
-      <textarea id="about-bio1" rows="4">${escHtml(a.bio1 || '')}</textarea>
-    </div>
-
-    <div class="admin-field">
-      <label>Bio paragraph 2 (HTML allowed)</label>
-      <div class="rte-toolbar" data-target="about-bio2">
-        <button type="button" class="rte-btn" data-cmd="bold">B</button>
-        <button type="button" class="rte-btn" data-cmd="italic">I</button>
-        <button type="button" class="rte-btn" data-cmd="underline">U</button>
-        <button type="button" class="rte-btn" data-cmd="link">Link</button>
-        <button type="button" class="rte-btn" data-cmd="clear">Clear</button>
-        <button type="button" class="rte-btn" data-cmd="expand">Expand</button>
-      </div>
-      <textarea id="about-bio2" rows="4">${escHtml(a.bio2 || '')}</textarea>
-    </div>
-
-    <div class="admin-field">
-      <label>Skills</label>
-      <div class="skills-admin-list" id="skills-list">
-        ${a.skills.map((s, i) => skillRow(s, i)).join('')}
-      </div>
-      <button class="admin-add-btn" onclick="addSkill()">+ Add Skill</button>
-    </div>`;
-
-  bindRemoveSkill();
-  bindRteToolbars();
-}
-
-// ── Rich Text Editor helpers ──
-function bindRteToolbars() {
-  document.querySelectorAll('.rte-toolbar').forEach(toolbar => {
-    const target = toolbar.dataset.target;
-    toolbar.querySelectorAll('[data-cmd]').forEach(btn => {
-      btn.addEventListener('click', () => rteToolbarAction(target, btn.dataset.cmd));
-    });
-  });
-}
-
-function rteToolbarAction(targetId, cmd) {
-  const ta = document.getElementById(targetId);
-  if (!ta) return;
-  if (cmd === 'bold')      return wrapSelection(targetId, '<strong>','</strong>');
-  if (cmd === 'italic')    return wrapSelection(targetId, '<em>','</em>');
-  if (cmd === 'underline') return wrapSelection(targetId, '<u>','</u>');
-  if (cmd === 'link') {
-    const sel = getSelectionTextFromTextarea(ta);
-    const url = prompt('Enter URL (include https://)');
-    if (!url) return;
-    wrapSelection(targetId, `<a href="${escHtml(url)}">`, '</a>');
-    return;
-  }
-  if (cmd === 'clear') {
-    ta.value = ta.value.replace(/<[^>]+>/g, '');
-    return;
-  }
-  if (cmd === 'expand') return openRteModal(targetId);
-}
-
-function wrapSelection(id, openTag, closeTag) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const start = el.selectionStart;
-  const end   = el.selectionEnd;
-  const sel   = el.value.substring(start, end) || '';
-  const newText = openTag + sel + closeTag;
-  el.setRangeText(newText, start, end, 'end');
-  el.focus();
-}
-
-function getSelectionTextFromTextarea(ta) {
-  return ta.value.substring(ta.selectionStart, ta.selectionEnd);
-}
-
-function openRteModal(targetId) {
-  let modal = document.getElementById('rte-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'rte-modal';
-    modal.innerHTML = `
-      <div class="rte-modal-inner">
-        <div class="rte-modal-toolbar">
-          <button type="button" data-cmd="bold">B</button>
-          <button type="button" data-cmd="italic">I</button>
-          <button type="button" data-cmd="underline">U</button>
-          <button type="button" data-cmd="link">Link</button>
-          <button type="button" id="rte-save">Save</button>
-          <button type="button" id="rte-cancel">Cancel</button>
-        </div>
-        <div id="rte-edit" contenteditable="true" class="rte-editable"></div>
-      </div>`;
-    document.body.appendChild(modal);
-
-    modal.querySelectorAll('.rte-modal-toolbar [data-cmd]').forEach(b => {
-      b.addEventListener('click', () => document.execCommand(b.dataset.cmd, false, null));
-    });
-    modal.querySelector('#rte-save').addEventListener('click', () => {
-      const content = modal.querySelector('#rte-edit').innerHTML;
-      modal.dataset.target && (document.getElementById(modal.dataset.target).value = content);
-      modal.style.display = 'none';
-    });
-    modal.querySelector('#rte-cancel').addEventListener('click', () => { modal.style.display = 'none'; });
-  }
-  const ta = document.getElementById(targetId);
-  modal.dataset.target = targetId;
-  modal.querySelector('#rte-edit').innerHTML = ta.value || '';
-  modal.style.display = 'flex';
-}
-
-function skillRow(value, i) {
-  return `<div class="skill-admin-row">
-    <input type="text" class="skill-input" value="${escHtml(value)}" placeholder="Skill name">
-    <button class="admin-remove-btn" data-index="${i}">✕</button>
-  </div>`;
-}
-
-function addSkill() {
-  const list = document.getElementById('skills-list');
-  list.insertAdjacentHTML('beforeend', skillRow('', list.querySelectorAll('.skill-admin-row').length));
-  bindRemoveSkill();
-}
-
-function bindRemoveSkill() {
-  document.querySelectorAll('#skills-list .admin-remove-btn').forEach(btn => {
-    btn.onclick = () => btn.closest('.skill-admin-row').remove();
-  });
-}
-
-// ── PROJECTS ──
-function buildProjectsForm(projects) {
-  document.getElementById('section-projects').innerHTML = `
-    <h2 class="admin-section-title">Projects</h2>
-    <div class="admin-card-group" id="projects-list">
-      ${projects.map((p, i) => projectCard(p, i)).join('')}
-    </div>
-    <button class="admin-add-btn" style="margin-top:1rem" onclick="addProject()">+ Add Project</button>`;
-  bindCardToggle();
-}
-
-function projectCard(p, i) {
-  return `<div class="admin-card" data-index="${i}">
-    <div class="admin-card-header">
-      <span class="admin-card-label">Project ${p.num || (i+1)}</span>
-      <span class="admin-card-toggle">▾</span>
-    </div>
-    <div class="admin-card-body">
-      ${field('Number', `p${i}-num`, p.num)}
-      ${field('Status label', `p${i}-status`, p.status)}
-      <div class="admin-field">
-        <label>Completed?</label>
-        <input type="checkbox" id="p${i}-done" ${p.statusDone ? 'checked' : ''} style="width:auto;margin-top:4px">
-      </div>
-      ${field('Codename / Redacted text', `p${i}-codename`, p.codename)}
-      ${field('Project type', `p${i}-type`, p.type)}
-      ${field('Hint line', `p${i}-hint`, p.hint)}
-      <div class="admin-field">
-        <label>Tech Stack</label>
-        <div id="stack-${i}">${p.stack.map((s, j) => stackRow(i, j, s)).join('')}</div>
-        <button class="admin-add-btn" onclick="addStack(${i})">+ Add Tech</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-function stackRow(pi, si, s) {
-  return `<div class="stack-admin-row" data-pi="${pi}" data-si="${si}">
-    <input type="text"   class="stack-name" value="${escHtml(s.name)}" placeholder="Tech name">
-    <input type="number" class="stack-pct"  value="${s.pct}" min="0" max="100" placeholder="%">
-    <button class="admin-remove-btn" onclick="this.closest('.stack-admin-row').remove()">✕</button>
-  </div>`;
-}
-
-function addStack(pi) {
-  document.getElementById('stack-' + pi)
-    .insertAdjacentHTML('beforeend', stackRow(pi, Date.now(), { name: '', pct: 50 }));
-}
-
-function addProject() {
-  const list = document.getElementById('projects-list');
-  const i    = list.querySelectorAll('.admin-card').length;
-  list.insertAdjacentHTML('beforeend', projectCard(
-    { num: '00'+(i+1), status: 'In Progress', statusDone: false,
-      codename: '████████', type: 'Project Type', hint: '💡 Hint: ...', stack: [] }, i));
-  bindCardToggle();
-}
-
-// ── GALLERY ──
-function buildGalleryForm(gallery) {
-  document.getElementById('section-gallery').innerHTML = `
-    <h2 class="admin-section-title">Gallery</h2>
-    <div class="admin-card-group" id="gallery-list">
-      ${gallery.map((g, i) => galleryCard(g, i)).join('')}
-    </div>
-    <button class="admin-add-btn" style="margin-top:1rem" onclick="addGalleryItem()">+ Add Photo</button>`;
-  bindCardToggle();
-  gallery.forEach((g, i) => bindGalleryImageUpload(i, g.src));
-}
-
-function galleryCard(g, i) {
-  return `<div class="admin-card" data-index="${i}">
-    <div class="admin-card-header">
-      <span class="admin-card-label">Photo ${i+1} — ${g.category || 'Uncategorized'}</span>
-      <span class="admin-card-toggle">▾</span>
-    </div>
-    <div class="admin-card-body">
-      ${field('Category', 'g'+i+'-category', g.category)}
-      ${field('Caption',  'g'+i+'-caption',  g.caption)}
-      <div class="admin-field">
-        <label>Photo</label>
-        <div class="img-upload-area" id="upload-area-${i}">
-          <input type="file" id="file-input-${i}" accept="image/*">
-          <div class="img-upload-icon">📷</div>
-          <p class="img-upload-label">Click or drag to upload</p>
-          <p class="img-upload-sub">JPG, PNG, WEBP — max 32MB</p>
-        </div>
-        <div class="img-preview-wrap" id="preview-wrap-${i}" style="display:none">
-          <img class="img-preview" id="img-preview-${i}" src="" alt="Preview">
-          <button class="img-preview-remove" onclick="removeGalleryImage(${i})">✕ Remove</button>
-        </div>
-        <p class="img-upload-status" id="upload-status-${i}"></p>
-        <input type="hidden" id="g${i}-src" value="${escHtml(g.src)}">
-      </div>
-    </div>
-  </div>`;
-}
-
-function bindGalleryImageUpload(i, existingSrc) {
-  if (existingSrc) showImagePreview(i, existingSrc);
-  const fileInput = document.getElementById('file-input-' + i);
-  const area      = document.getElementById('upload-area-' + i);
-  if (!fileInput || !area) return;
-  fileInput.addEventListener('change', e => {
-    if (e.target.files[0]) handleImageUpload(i, e.target.files[0]);
-  });
-  area.addEventListener('dragover',  e => { e.preventDefault(); area.classList.add('dragover'); });
-  area.addEventListener('dragleave', () => area.classList.remove('dragover'));
-  area.addEventListener('drop', e => {
-    e.preventDefault(); area.classList.remove('dragover');
-    const f = e.dataTransfer.files[0];
-    if (f && f.type.startsWith('image/')) handleImageUpload(i, f);
-  });
-}
-
-function removeGalleryImage(i) {
-  document.getElementById('g'+i+'-src').value                = '';
-  document.getElementById('preview-wrap-'+i).style.display  = 'none';
-  document.getElementById('upload-area-'+i).style.display   = 'flex';
-  document.getElementById('file-input-'+i).value            = '';
-  setUploadStatus(i, '');
-}
-
-function addGalleryItem() {
-  const list = document.getElementById('gallery-list');
-  const i    = list.querySelectorAll('.admin-card').length;
-  list.insertAdjacentHTML('beforeend', galleryCard({ category: 'Events', caption: '', src: '' }, i));
-  bindCardToggle();
-  bindGalleryImageUpload(i, '');
-}
-
-// ── CONTACT ──
-function buildContactForm(c) {
-  document.getElementById('section-contact').innerHTML = `
-    <h2 class="admin-section-title">Contact</h2>
-    ${field('Email address', 'contact-email',    c.email)}
-    ${field('LinkedIn URL',  'contact-linkedin', c.linkedin)}
-    ${field('GitHub URL',    'contact-github',   c.github)}
-    ${field('Resume URL',    'contact-resume',   c.resume)}
-    ${field('QR URL (admin only)', 'contact-qr', c.qrUrl || '')}`;
-}
-
-// ── SETTINGS ──
-function buildSettingsForm() {
-  document.getElementById('section-settings').innerHTML = `
-    <h2 class="admin-section-title">Settings</h2>
-    <div class="pin-change-box">
-      <p class="pin-change-desc">Change your admin PIN. You'll need your current PIN to confirm.</p>
-      ${field('Current PIN', 'pin-current', '')}
-      ${field('New PIN (4 digits)', 'pin-new', '')}
-      ${field('Confirm New PIN', 'pin-confirm', '')}
-      <p class="pin-change-status" id="pin-change-status"></p>
-      <button class="admin-save-btn" onclick="changePin()" style="margin-top:0.5rem">Update PIN</button>
-    </div>`;
-
-  // Set password type on PIN inputs
-  ['pin-current','pin-new','pin-confirm'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.type = 'password'; el.maxLength = 4; el.inputMode = 'numeric'; el.value = ''; }
-  });
-}
-
-async function changePin() {
-  const cur  = document.getElementById('pin-current').value.trim();
-  const nw   = document.getElementById('pin-new').value.trim();
-  const conf = document.getElementById('pin-confirm').value.trim();
-  const st   = document.getElementById('pin-change-status');
-
-  const msg = (m, ok) => { st.textContent = m; st.className = 'pin-change-status ' + (ok ? 'success' : 'error'); };
-
-  if (!cur || !nw || !conf)           return msg('Please fill in all fields.', false);
-  if (!/^\d{4}$/.test(nw))           return msg('New PIN must be exactly 4 digits.', false);
-  if (nw !== conf)                    return msg('New PINs do not match.', false);
-  if (await sha256(cur) !== storedPinHash) return msg('Current PIN is incorrect.', false);
-
-  msg('Saving…', true);
-  const newHash  = await sha256(nw);
-  const saveData = { ...currentData, _pin: newHash };
-
-  try {
-    const text = await (await fetch('/api/save-content', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(saveData),
-    })).text();
-    const json = (() => { try { return JSON.parse(text); } catch { return { error: text }; } })();
-
-    if (json.ok) {
-      storedPinHash    = newHash;
-      currentData._pin = newHash;
-      msg('✓ PIN updated successfully!', true);
-      ['pin-current','pin-new','pin-confirm'].forEach(id => { document.getElementById(id).value = ''; });
-    } else {
-      msg(json.error || 'Failed to save.', false);
+    const el = document.getElementById(`section-${activeTab}`);
+    if (el) {
+      el.classList.add('active');
+      const renderer = {
+        hero:     renderHeroSection,
+        about:    renderAboutSection,
+        projects: renderProjectsSection,
+        gallery:  renderGallerySection,
+        contact:  renderContactSection,
+        settings: renderSettingsSection,
+      }[activeTab];
+      if (renderer) renderer(el);
     }
-  } catch (e) { msg('Network error.', false); console.error(e); }
-}
+  }
 
-// ── IMAGE UPLOAD ──
-async function handleImageUpload(key, file) {
-  setUploadStatus(key, 'Uploading…', 'uploading');
-  try {
-    const raw = (await fileToBase64(file)).split(',')[1];
-    const res = await fetch('/api/save-content?action=upload-image', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageBase64: raw, fileName: file.name }),
+  // ── Section: Hero ──────────────────────────────────────────────────────────
+
+  function renderHeroSection(el) {
+    const h = data.hero || {};
+    el.innerHTML = `
+      <h3 class="admin-section-title">Hero</h3>
+
+      <label class="admin-label">Eyebrow text</label>
+      <input class="admin-input" id="a-eyebrow" value="${esc(h.eyebrow || '')}"/>
+
+      <label class="admin-label">First name</label>
+      <input class="admin-input" id="a-firstName" value="${esc(h.firstName || '')}"/>
+
+      <label class="admin-label">Last name / suffix</label>
+      <input class="admin-input" id="a-lastName" value="${esc(h.lastName || '')}"/>
+
+      <label class="admin-label">Subtitle</label>
+      <input class="admin-input" id="a-subtitle" value="${esc(h.subtitle || '')}"/>
+
+      <label class="admin-label">Location / tagline</label>
+      <input class="admin-input" id="a-location" value="${esc(h.location || '')}"/>
+
+      <label class="admin-label">Profile image URL</label>
+      <input class="admin-input" id="a-profileImage" value="${esc(h.profileImage || '')}"/>
+    `;
+
+    ['eyebrow','firstName','lastName','subtitle','location','profileImage'].forEach(k => {
+      el.querySelector(`#a-${k}`).addEventListener('input', e => {
+        data.hero = data.hero || {};
+        data.hero[k] = e.target.value;
+        liveRefreshHero();
+      });
     });
-    const json = await res.json();
-    if (res.ok && json.url) {
-      const srcId = key === 'profile' ? 'hero-profileImage' : 'g'+key+'-src';
-      const el    = document.getElementById(srcId);
-      if (el) el.value = json.url;
-      showImagePreview(key, json.url);
-      setUploadStatus(key, '✓ Uploaded!', 'done');
-    } else {
-      setUploadStatus(key, json.error || 'Upload failed', 'error');
+  }
+
+  function liveRefreshHero() {
+    const h = data.hero || {};
+    setText('.hero-eyebrow', h.eyebrow);
+    setText('.hero-name .line-1', h.firstName);
+    setText('.hero-name .line-2', h.lastName);
+    setText('.hero-title', h.subtitle);
+  }
+
+  // ── Section: About ─────────────────────────────────────────────────────────
+
+  function renderAboutSection(el) {
+    const a = data.about || {};
+    el.innerHTML = `
+      <h3 class="admin-section-title">About</h3>
+
+      <label class="admin-label">Heading (use \\n for line break)</label>
+      <input class="admin-input" id="a-aHeading" value="${esc((a.heading||'').replace(/\n/g,'\\n'))}"/>
+
+      <label class="admin-label">Bio paragraph 1 (HTML ok)</label>
+      <textarea class="admin-textarea" id="a-bio1">${esc(a.bio1||'')}</textarea>
+
+      <label class="admin-label">Bio paragraph 2 (HTML ok)</label>
+      <textarea class="admin-textarea" id="a-bio2">${esc(a.bio2||'')}</textarea>
+
+      <label class="admin-label">Skills (one per line)</label>
+      <textarea class="admin-textarea" id="a-skills">${(a.skills||[]).join('\n')}</textarea>
+    `;
+
+    el.querySelector('#a-aHeading').addEventListener('input', e => {
+      data.about = data.about || {};
+      data.about.heading = e.target.value.replace(/\\n/g, '\n');
+    });
+    el.querySelector('#a-bio1').addEventListener('input', e => {
+      data.about = data.about || {}; data.about.bio1 = e.target.value;
+    });
+    el.querySelector('#a-bio2').addEventListener('input', e => {
+      data.about = data.about || {}; data.about.bio2 = e.target.value;
+    });
+    el.querySelector('#a-skills').addEventListener('input', e => {
+      data.about = data.about || {};
+      data.about.skills = e.target.value.split('\n').filter(Boolean);
+    });
+  }
+
+  // ── Section: Projects ──────────────────────────────────────────────────────
+
+  function renderProjectsSection(el) {
+    data.projects = data.projects || [];
+    el.innerHTML = `<h3 class="admin-section-title">Projects</h3><div id="proj-list"></div>
+      <button class="admin-btn-add" id="add-project-btn">+ Add project</button>`;
+
+    el.querySelector('#add-project-btn').addEventListener('click', () => {
+      data.projects.push({
+        num: String(data.projects.length + 1).padStart(3, '0'),
+        status: 'In Progress', statusDone: false,
+        codename: '████████', type: 'Project',
+        hint: '', stack: [{ name: 'Tech', pct: 0 }]
+      });
+      renderProjectsSection(el);
+    });
+
+    buildProjectList(el.querySelector('#proj-list'), el);
+  }
+
+  function buildProjectList(container, parentEl) {
+    container.innerHTML = '';
+    data.projects.forEach((proj, pi) => {
+      const card = document.createElement('div');
+      card.className = 'admin-proj-card';
+      card.innerHTML = projectCardHTML(proj, pi);
+      container.appendChild(card);
+      wireProjectCard(card, pi, parentEl);
+    });
+  }
+
+  function projectCardHTML(proj, pi) {
+    const stack = Array.isArray(proj.stack) ? proj.stack : [];
+    const overall = stack.length
+      ? (stack.reduce((s, x) => s + (x.pct || 0), 0) / stack.length).toFixed(2)
+      : '0.00';
+
+    const codenamePreview = buildCodenamePreview(proj.codename || '', stack);
+
+    const stackRows = stack.map((s, si) => `
+      <div class="admin-stack-row" data-si="${si}">
+        <div class="admin-stack-header">
+          <input class="admin-input admin-stack-name" data-pi="${pi}" data-si="${si}"
+            value="${esc(s.name || '')}" placeholder="Tech name"/>
+          <button class="admin-stack-remove" data-pi="${pi}" data-si="${si}" title="Remove">✕</button>
+        </div>
+        <div class="admin-stack-slider-row">
+          <div class="admin-stack-color-dot" style="background:${STACK_PALETTE[si % STACK_PALETTE.length]};"></div>
+          <input type="range" class="admin-stack-slider" min="0" max="100" step="1"
+            value="${s.pct || 0}" data-pi="${pi}" data-si="${si}"/>
+          <span class="admin-stack-pct-label" id="spct-${pi}-${si}">${Number(s.pct||0).toFixed(1)}%</span>
+        </div>
+      </div>`).join('');
+
+    return `
+      <div class="admin-proj-top">
+        <span class="admin-proj-num">${proj.num || ''}</span>
+        <button class="admin-proj-remove" data-pi="${pi}" title="Delete project">Delete</button>
+      </div>
+
+      <label class="admin-label">Codename (shown as redacted blocks)</label>
+      <input class="admin-input admin-codename-input" data-pi="${pi}" value="${esc(proj.codename || '')}"/>
+
+      <div class="admin-codename-preview" id="cdprev-${pi}">${codenamePreview}</div>
+
+      <div class="admin-proj-row">
+        <div>
+          <label class="admin-label">Project type</label>
+          <input class="admin-input admin-proj-type" data-pi="${pi}" value="${esc(proj.type || '')}"/>
+        </div>
+        <div>
+          <label class="admin-label">Status label</label>
+          <input class="admin-input admin-proj-status" data-pi="${pi}" value="${esc(proj.status || '')}"/>
+        </div>
+      </div>
+
+      <label class="admin-label">
+        <input type="checkbox" class="admin-proj-done" data-pi="${pi}" ${proj.statusDone ? 'checked' : ''}/>
+        Mark as completed
+      </label>
+
+      <label class="admin-label">Hint text</label>
+      <input class="admin-input admin-proj-hint" data-pi="${pi}" value="${esc(proj.hint || '')}"/>
+
+      <div class="admin-stack-section">
+        <label class="admin-label">Tech stack & progress</label>
+        <p class="admin-overall-line">
+          Overall: <strong id="overall-${pi}">${overall}%</strong>
+        </p>
+        <div class="admin-stack-list" id="slist-${pi}">${stackRows}</div>
+        <button class="admin-btn-add admin-add-stack" data-pi="${pi}">+ Add tech</button>
+      </div>
+    `;
+  }
+
+  function buildCodenamePreview(codename, stack) {
+    const chars   = (codename || '████').split('');
+    const segSize = Math.ceil(chars.length / Math.max(stack.length, 1));
+    return chars.map((ch, i) => {
+      const si      = Math.min(Math.floor(i / segSize), stack.length - 1);
+      const color   = STACK_PALETTE[si % STACK_PALETTE.length];
+      const pct     = stack[si] ? (stack[si].pct || 0) : 0;
+      const opacity = (0.20 + (pct / 100) * 0.80).toFixed(2);
+      return `<span style="display:inline-block;border-radius:3px;padding:0 1px;background:${color};opacity:${opacity};color:${color};font-family:monospace;font-size:1.3rem;">${ch}</span>`;
+    }).join('');
+  }
+
+  function wireProjectCard(card, pi, parentEl) {
+    // Delete project
+    card.querySelector('.admin-proj-remove').addEventListener('click', () => {
+      if (confirm('Delete this project?')) {
+        data.projects.splice(pi, 1);
+        renderProjectsSection(parentEl);
+      }
+    });
+
+    // Codename input → update preview
+    card.querySelector('.admin-codename-input').addEventListener('input', e => {
+      data.projects[pi].codename = e.target.value;
+      refreshCodenamePreview(pi);
+      triggerLiveProjectRender();
+    });
+
+    // Type, status, done, hint
+    card.querySelector('.admin-proj-type').addEventListener('input', e => {
+      data.projects[pi].type = e.target.value;
+    });
+    card.querySelector('.admin-proj-status').addEventListener('input', e => {
+      data.projects[pi].status = e.target.value;
+    });
+    card.querySelector('.admin-proj-done').addEventListener('change', e => {
+      data.projects[pi].statusDone = e.target.checked;
+    });
+    card.querySelector('.admin-proj-hint').addEventListener('input', e => {
+      data.projects[pi].hint = e.target.value;
+    });
+
+    // Stack name inputs
+    card.querySelectorAll('.admin-stack-name').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const si = +e.target.dataset.si;
+        data.projects[pi].stack[si].name = e.target.value;
+        refreshCodenamePreview(pi);
+        triggerLiveProjectRender();
+      });
+    });
+
+    // Stack sliders — the key interaction
+    card.querySelectorAll('.admin-stack-slider').forEach(slider => {
+      slider.addEventListener('input', e => {
+        const si  = +e.target.dataset.si;
+        const val = +e.target.value;
+        data.projects[pi].stack[si].pct = val;
+
+        // update pct label
+        const lbl = document.getElementById(`spct-${pi}-${si}`);
+        if (lbl) lbl.textContent = val.toFixed(1) + '%';
+
+        // update overall
+        refreshOverall(pi);
+        // update codename color preview
+        refreshCodenamePreview(pi);
+        // push to live site
+        triggerLiveProjectRender();
+      });
+    });
+
+    // Remove stack
+    card.querySelectorAll('.admin-stack-remove').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const si = +e.target.dataset.si;
+        data.projects[pi].stack.splice(si, 1);
+        renderProjectsSection(parentEl);
+      });
+    });
+
+    // Add stack
+    card.querySelector('.admin-add-stack').addEventListener('click', () => {
+      if (data.projects[pi].stack.length >= STACK_PALETTE.length) return;
+      data.projects[pi].stack.push({ name: '', pct: 0 });
+      renderProjectsSection(parentEl);
+    });
+  }
+
+  function refreshOverall(pi) {
+    const stack = data.projects[pi].stack || [];
+    const avg   = stack.length
+      ? (stack.reduce((s, x) => s + (x.pct || 0), 0) / stack.length)
+      : 0;
+    const el = document.getElementById(`overall-${pi}`);
+    if (el) el.textContent = avg.toFixed(2) + '%';
+  }
+
+  function refreshCodenamePreview(pi) {
+    const proj = data.projects[pi];
+    const el   = document.getElementById(`cdprev-${pi}`);
+    if (el) el.innerHTML = buildCodenamePreview(proj.codename || '', proj.stack || []);
+  }
+
+  function triggerLiveProjectRender() {
+    // Re-render the live projects section if load-content exposed a hook
+    if (window._renderProjects) window._renderProjects(data.projects);
+  }
+
+  // ── Section: Gallery ───────────────────────────────────────────────────────
+
+  function renderGallerySection(el) {
+    const gallery = data.gallery || [];
+    el.innerHTML = `<h3 class="admin-section-title">Gallery</h3>` +
+      gallery.map((item, i) => `
+        <div class="admin-gallery-item">
+          <label class="admin-label">Item ${i + 1} — Category</label>
+          <select class="admin-select admin-gal-cat" data-i="${i}">
+            ${['Org Life','Thesis','Events','Academics','Friends'].map(c =>
+              `<option ${c===item.category?'selected':''}>${c}</option>`).join('')}
+          </select>
+          <label class="admin-label">Caption</label>
+          <input class="admin-input admin-gal-cap" data-i="${i}" value="${esc(item.caption||'')}"/>
+          <label class="admin-label">Image URL or base64</label>
+          <input class="admin-input admin-gal-src" data-i="${i}" value="${esc(item.src||'')}"/>
+        </div>`).join('') +
+      `<button class="admin-btn-add" id="add-gallery-btn">+ Add photo</button>`;
+
+    el.querySelectorAll('.admin-gal-cat').forEach(s => s.addEventListener('change', e => {
+      data.gallery[+e.target.dataset.i].category = e.target.value;
+    }));
+    el.querySelectorAll('.admin-gal-cap').forEach(s => s.addEventListener('input', e => {
+      data.gallery[+e.target.dataset.i].caption = e.target.value;
+    }));
+    el.querySelectorAll('.admin-gal-src').forEach(s => s.addEventListener('input', e => {
+      data.gallery[+e.target.dataset.i].src = e.target.value;
+    }));
+    el.querySelector('#add-gallery-btn').addEventListener('click', () => {
+      data.gallery = data.gallery || [];
+      data.gallery.push({ category: 'Events', caption: '', src: '' });
+      renderGallerySection(el);
+    });
+  }
+
+  // ── Section: Contact ───────────────────────────────────────────────────────
+
+  function renderContactSection(el) {
+    const c = data.contact || {};
+    el.innerHTML = `
+      <h3 class="admin-section-title">Contact</h3>
+      <label class="admin-label">Email</label>
+      <input class="admin-input" id="a-email" value="${esc(c.email||'')}"/>
+      <label class="admin-label">LinkedIn URL</label>
+      <input class="admin-input" id="a-linkedin" value="${esc(c.linkedin||'')}"/>
+      <label class="admin-label">GitHub URL</label>
+      <input class="admin-input" id="a-github" value="${esc(c.github||'')}"/>
+      <label class="admin-label">Resume URL</label>
+      <input class="admin-input" id="a-resume" value="${esc(c.resume||'')}"/>
+      <label class="admin-label">QR code URL</label>
+      <input class="admin-input" id="a-qrUrl" value="${esc(c.qrUrl||'')}"/>
+    `;
+    ['email','linkedin','github','resume','qrUrl'].forEach(k => {
+      el.querySelector(`#a-${k}`).addEventListener('input', e => {
+        data.contact = data.contact || {};
+        data.contact[k] = e.target.value;
+      });
+    });
+  }
+
+  // ── Section: Settings ──────────────────────────────────────────────────────
+
+  function renderSettingsSection(el) {
+    el.innerHTML = `
+      <h3 class="admin-section-title">Settings</h3>
+      <label class="admin-label">Change PIN (4 digits)</label>
+      <input class="admin-input" id="a-newPin" type="password" maxlength="4" placeholder="Enter new PIN"/>
+      <button class="admin-btn-add" id="set-pin-btn">Set PIN</button>
+      <p class="admin-hint-text" id="pin-set-msg"></p>
+    `;
+    el.querySelector('#set-pin-btn').addEventListener('click', async () => {
+      const val = el.querySelector('#a-newPin').value;
+      if (!/^\d{4}$/.test(val)) {
+        el.querySelector('#pin-set-msg').textContent = 'PIN must be exactly 4 digits.';
+        return;
+      }
+      data[PIN_KEY] = await sha256(val);
+      el.querySelector('#pin-set-msg').textContent = 'PIN updated. Save changes to persist.';
+    });
+  }
+
+  // ── Save ───────────────────────────────────────────────────────────────────
+
+  async function saveData() {
+    const statusEl = document.getElementById('admin-status');
+    statusEl.textContent = 'Saving…';
+    try {
+      const res = await fetch(SAVE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      statusEl.textContent = 'Saved ✓';
+      // Refresh the live page content
+      if (window._loadContent) window._loadContent(data);
+    } catch (e) {
+      statusEl.textContent = 'Save failed — check console';
+      console.error(e);
     }
-  } catch (e) { setUploadStatus(key, 'Error: ' + e.message, 'error'); }
-}
+    setTimeout(() => { statusEl.textContent = ''; }, 3000);
+  }
 
-function showImagePreview(key, src) {
-  const isProfile   = key === 'profile';
-  const previewWrap = document.getElementById(isProfile ? 'preview-wrap-profile'   : 'preview-wrap-'+key);
-  const previewImg  = document.getElementById(isProfile ? 'img-preview-profile'    : 'img-preview-'+key);
-  const area        = document.getElementById(isProfile ? 'upload-area-profile'    : 'upload-area-'+key);
-  if (!previewWrap || !previewImg) return;
-  previewImg.src             = src;
-  previewWrap.style.display  = 'block';
-  if (area) area.style.display = 'none';
-}
+  // ── Utilities ──────────────────────────────────────────────────────────────
 
-function setUploadStatus(key, msg, type = '') {
-  const isProfile = key === 'profile';
-  const el = document.getElementById(isProfile ? 'upload-status-profile' : 'upload-status-'+key);
-  if (!el) return;
-  el.textContent = msg;
-  el.className   = 'img-upload-status' + (type ? ' ' + type : '');
-}
+  function esc(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/"/g,'&quot;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+  }
 
-function fileToBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload  = () => res(r.result);
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
-}
+  function setText(sel, val) {
+    const el = document.querySelector(sel);
+    if (el) el.textContent = val || '';
+  }
 
-// ── CARD TOGGLE ──
-function bindCardToggle() {
-  document.querySelectorAll('.admin-card-header').forEach(h => {
-    h.onclick = () => h.closest('.admin-card').classList.toggle('collapsed');
-  });
-}
+  async function sha256(message) {
+    const msgBuf  = new TextEncoder().encode(message);
+    const hashBuf = await crypto.subtle.digest('SHA-256', msgBuf);
+    return Array.from(new Uint8Array(hashBuf))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
-// ── COLLECT DATA ──
-function collectData() {
-  const val = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
-
-  const hero = {
-    eyebrow: val('hero-eyebrow'), firstName: val('hero-firstName'),
-    lastName: val('hero-lastName'), subtitle: val('hero-subtitle'),
-    location: val('hero-location'), profileImage: val('hero-profileImage'),
-    profileFrame: val('hero-profileFrame') || 'circle',
-  };
-
-  const skills = Array.from(document.querySelectorAll('.skill-input')).map(i => i.value.trim()).filter(Boolean);
-  const about  = { heading: val('about-heading'), bio1: val('about-bio1'), bio2: val('about-bio2'), skills };
-
-  const projects = Array.from(document.querySelectorAll('#projects-list .admin-card')).map(card => {
-    const i = card.dataset.index;
-    return {
-      num: val('p'+i+'-num'), status: val('p'+i+'-status'),
-      statusDone: document.getElementById('p'+i+'-done')?.checked || false,
-      codename: val('p'+i+'-codename'), type: val('p'+i+'-type'), hint: val('p'+i+'-hint'),
-      stack: Array.from(card.querySelectorAll('.stack-admin-row')).map(row => ({
-        name: row.querySelector('.stack-name').value.trim(),
-        pct:  parseInt(row.querySelector('.stack-pct').value) || 0,
-      })),
-    };
-  });
-
-  const gallery = Array.from(document.querySelectorAll('#gallery-list .admin-card')).map(card => {
-    const i = card.dataset.index;
-    return { category: val('g'+i+'-category'), caption: val('g'+i+'-caption'), src: val('g'+i+'-src') };
-  });
-
-  const contact = {
-    email: val('contact-email'), linkedin: val('contact-linkedin'),
-    github: val('contact-github'), resume: val('contact-resume'), qrUrl: val('contact-qr'),
-  };
-
-  return { _pin: currentData?._pin || '', hero, about, projects, gallery, contact };
-}
-
-// ── SAVE ──
-document.getElementById('admin-save-btn').addEventListener('click', async () => {
-  const btn = document.getElementById('admin-save-btn');
-  btn.disabled = true;
-  setStatus('Saving…');
-  try {
-    const text = await (await fetch('/api/save-content', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(collectData()),
-    })).text();
-    const json = (() => { try { return JSON.parse(text); } catch { return { error: text }; } })();
-    if (json.ok) { setStatus('Saved! Site will update in ~30s.', false, true); }
-    else         { setStatus(json.error || 'Save failed.', true); console.error(json); }
-  } catch (e) { setStatus('Network error.', true); console.error(e); }
-  finally { btn.disabled = false; }
-});
-
-// ── HELPERS ──
-function field(label, id, value, type = 'input') {
-  const v = escHtml(value || '');
-  return `<div class="admin-field">
-    <label for="${id}">${label}</label>
-    ${type === 'textarea' ? `<textarea id="${id}" rows="3">${v}</textarea>` : `<input type="text" id="${id}" value="${v}">`}
-  </div>`;
-}
-
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function setStatus(msg, isError = false, isSuccess = false) {
-  adminStatus.textContent = msg;
-  adminStatus.className   = 'admin-status' + (isError ? ' error' : '') + (isSuccess ? ' success' : '');
-}
+})();

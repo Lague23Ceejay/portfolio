@@ -23,6 +23,24 @@
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 
+/* Remove default rectangular outline on focus and use a circular box-shadow */
+.theme-toggle-btn:focus {
+  /* fallback for browsers without :focus-visible support */
+  outline: none;
+}
+
+/* Show a subtle circular focus ring only when navigating via keyboard */
+.theme-toggle-btn:focus-visible {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 6px rgba(var(--accent-rgb, 232,232,228), 0.12);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.98);
+  /* keep the rounded appearance while pressed */
+  border-radius: 50%;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+}
+
 .theme-toggle-btn:hover {
   border-color: var(--accent);
   transform: scale(1.08);
