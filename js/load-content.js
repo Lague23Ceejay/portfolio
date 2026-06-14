@@ -1,13 +1,12 @@
 // load-content.js
 // Fetches data.json and renders all site content dynamically.
-// Projects section: colored redacted codename blocks + per-stack colored progress bars.
 
 const STACK_PALETTE = [
-  { bar: '#5DCAA5', block: '#5DCAA5' }, // teal   — stack[0]
-  { bar: '#7F77DD', block: '#7F77DD' }, // purple — stack[1]
-  { bar: '#85B7EB', block: '#85B7EB' }, // blue   — stack[2]
-  { bar: '#EF9F27', block: '#EF9F27' }, // amber  — stack[3]
-  { bar: '#ED93B1', block: '#ED93B1' }, // pink   — stack[4]
+  '#5DCAA5', // teal   — stack[0]
+  '#7F77DD', // purple — stack[1]
+  '#85B7EB', // blue   — stack[2]
+  '#EF9F27', // amber  — stack[3]
+  '#ED93B1', // pink   — stack[4]
 ];
 
 async function loadContent() {
@@ -25,6 +24,16 @@ async function loadContent() {
   renderProjects(data.projects);
   renderGallery(data.gallery);
   renderContact(data.contact);
+
+  // expose for admin live-refresh
+  window._renderProjects = renderProjects;
+  window._loadContent = function(d) {
+    renderHero(d.hero);
+    renderAbout(d.about);
+    renderProjects(d.projects);
+    renderGallery(d.gallery);
+    renderContact(d.contact);
+  };
 }
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
@@ -78,20 +87,17 @@ function renderAbout(a) {
 
 function calcOverall(stack) {
   if (!stack || !stack.length) return 0;
-  const sum = stack.reduce((acc, s) => acc + (s.pct || 0), 0);
-  return sum / stack.length;
+  return stack.reduce((acc, s) => acc + (s.pct || 0), 0) / stack.length;
 }
 
 function buildCodename(codename, stack) {
-  // Each character block is colored by the tech stack segment it maps to.
-  // Opacity scales with that stack's percentage (faint = low, opaque = 100%).
-  const chars      = (codename || '████').split('');
-  const segSize    = Math.ceil(chars.length / Math.max(stack.length, 1));
+  const chars   = (codename || '████').split('');
+  const segSize = Math.ceil(chars.length / Math.max(stack.length, 1));
 
   return chars.map((ch, i) => {
     const si      = Math.min(Math.floor(i / segSize), stack.length - 1);
-    const color   = (STACK_PALETTE[si % STACK_PALETTE.length]).block;
-    const pct     = stack[si] ? stack[si].pct : 0;
+    const color   = STACK_PALETTE[si % STACK_PALETTE.length];
+    const pct     = stack[si] ? (stack[si].pct || 0) : 0;
     const opacity = (0.20 + (pct / 100) * 0.80).toFixed(2);
     const label   = stack[si] ? `${stack[si].name}: ${pct}%` : '';
     return `<span class="redact-block" style="background:${color};opacity:${opacity};color:${color};" title="${label}">${ch}</span>`;
@@ -100,14 +106,14 @@ function buildCodename(codename, stack) {
 
 function buildStackBars(stack) {
   return stack.map((s, i) => {
-    const color = (STACK_PALETTE[i % STACK_PALETTE.length]).bar;
+    const color = STACK_PALETTE[i % STACK_PALETTE.length];
     return `
       <div class="stack-row">
         <span class="stack-label">${s.name}</span>
         <div class="stack-bar-bg">
-          <div class="stack-bar-fill" style="width:${s.pct}%;background:${color};"></div>
+          <div class="stack-bar-fill" style="width:${s.pct || 0}%;background:${color};"></div>
         </div>
-        <span class="stack-pct">${Number(s.pct).toFixed(1)}%</span>
+        <span class="stack-pct">${Number(s.pct || 0).toFixed(1)}%</span>
       </div>`;
   }).join('');
 }
@@ -135,19 +141,12 @@ function renderProjects(projects) {
             </span>
           </div>
         </div>
-
         <div class="project-codename">${codenameHTML}</div>
-
         <p class="project-overall">
-          Overall progress:
-          <span class="project-overall-pct">${overall.toFixed(2)}%</span>
+          Overall progress: <span class="project-overall-pct">${overall.toFixed(2)}%</span>
         </p>
-
         <p class="project-hint">${p.hint || ''}</p>
-
-        <div class="project-stack">
-          ${barsHTML}
-        </div>
+        <div class="project-stack">${barsHTML}</div>
       </div>`;
   }).join('');
 }
