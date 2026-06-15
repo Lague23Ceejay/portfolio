@@ -26,7 +26,6 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     loadData().then(() => {
-      wireTrigger();
       buildPinOverlay();
       buildAdminPanel();
       handleAdminHash(window.location.hash);
@@ -42,24 +41,6 @@
     } catch (e) {
       console.error('admin: failed to load data.json', e);
       data = {};
-    }
-  }
-
-  // ── Trigger: click nav logo ───────────────────────────────────────────────
-
-  function wireTrigger() {
-    const logo = document.querySelector('.nav-logo');
-    if (logo) {
-      logo.style.cursor = 'pointer';
-      logo.addEventListener('click', () => {
-        const overlay = document.getElementById('admin-pin-overlay');
-        if (overlay) overlay.style.display = 'flex';
-        // reset pin buffer on each open
-        pinBuffer = '';
-        updateDots();
-        const err = document.getElementById('pin-error');
-        if (err) err.textContent = '';
-      });
     }
   }
 
@@ -144,18 +125,24 @@
     const closeBtn = document.getElementById('admin-close-btn');
     if (closeBtn) closeBtn.addEventListener('click', () => {
       document.getElementById('admin-panel').style.display = 'none';
-      if (window.location.hash === '#admin') history.replaceState(null, '', ' ');
+      if (window.location.hash === '#admin') history.replaceState(null, '', window.location.pathname + window.location.search);
     });
   }
 
   function handleAdminHash(hash) {
-    if (hash !== '#admin') return;
     const overlay = document.getElementById('admin-pin-overlay');
-    if (overlay) overlay.style.display = 'flex';
-    pinBuffer = '';
-    updateDots();
-    const err = document.getElementById('pin-error');
-    if (err) err.textContent = '';
+    const panel = document.getElementById('admin-panel');
+    if (hash === '#admin') {
+      if (overlay) overlay.style.display = 'flex';
+      if (panel) panel.style.display = 'none';
+      pinBuffer = '';
+      updateDots();
+      const err = document.getElementById('pin-error');
+      if (err) err.textContent = '';
+    } else {
+      if (overlay) overlay.style.display = 'none';
+      if (panel) panel.style.display = 'none';
+    }
   }
 
   function renderActiveSection() {
