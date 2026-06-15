@@ -3,7 +3,7 @@
 async function loadContent() {
   let data;
   try {
-    const res = await fetch('/data.json?v=' + Date.now());
+    const res = await fetch('data.json?v=' + Date.now());
     data = await res.json();
   } catch (e) { console.error('Could not load data.json:', e); return; }
 

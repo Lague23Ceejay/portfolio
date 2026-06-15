@@ -29,8 +29,11 @@
       wireTrigger();
       buildPinOverlay();
       buildAdminPanel();
+      handleAdminHash(window.location.hash);
     });
   });
+
+  window.addEventListener('hashchange', () => handleAdminHash(window.location.hash));
 
   async function loadData() {
     try {
@@ -105,6 +108,9 @@
         document.getElementById('admin-pin-overlay').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'flex';
         renderActiveSection();
+        if (window.location.hash !== '#admin') {
+          history.replaceState(null, '', '#admin');
+        }
       } else {
         attempts++;
         if (errorEl) errorEl.textContent = attempts >= MAX_ATTEMPTS
@@ -138,7 +144,18 @@
     const closeBtn = document.getElementById('admin-close-btn');
     if (closeBtn) closeBtn.addEventListener('click', () => {
       document.getElementById('admin-panel').style.display = 'none';
+      if (window.location.hash === '#admin') history.replaceState(null, '', ' ');
     });
+  }
+
+  function handleAdminHash(hash) {
+    if (hash !== '#admin') return;
+    const overlay = document.getElementById('admin-pin-overlay');
+    if (overlay) overlay.style.display = 'flex';
+    pinBuffer = '';
+    updateDots();
+    const err = document.getElementById('pin-error');
+    if (err) err.textContent = '';
   }
 
   function renderActiveSection() {
