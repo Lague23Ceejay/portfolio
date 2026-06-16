@@ -1,4 +1,13 @@
 {
   "name": "cjl-portfolio",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "private": true,
+  "description": "Information Systems Web Portfolio & Management CMS Panel",
+  "scripts": {
+    "start-local": "npx vercel dev",
+    "deploy": "npx vercel --prod"
+  },
+  "devDependencies": {
+    "vercel": "^54.14.0"
+  }
 }

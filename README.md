@@ -1,94 +1,74 @@
-# Portfolio Website
+# Portfolio Website & CMS Dashboard
 
-A modular single-page portfolio built with HTML, CSS, and vanilla JavaScript.
+A modular single-page portfolio built with semantic HTML, modern CSS variables, and native vanilla JavaScript, backed by an integrated administrative content management workflow.
 
 ## Overview
 
-This project organizes styles and behavior by feature (components) so each section is isolated and easy to maintain.
+This project organizes styles and behavior by feature components so each section remains fully isolated, responsive, and easy to maintain.
 
-## File structure (high level)
+## File Structure
 
-- `index.html` — main page and markup.
-- `data.json` — optional content/storage for demos.
-- `package.json` — project metadata (if used for tooling).
-- `vercel.json` — Vercel deployment config.
-- `api/` — serverless endpoint(s); e.g. `save-content.js`.
-- `assets/` — static assets (images, icons).
-- `css/` — component CSS files:
-  - `base.css`, `nav.css`, `hero.css`, `about.css`, `projects.css`, `contact.css`, `footer.css`, `admin.css`, `gallery.css`, `theme-switcher.css`, `themes.css`
-- `js/` — interaction modules:
-  - `admin.js`, `background.js`, `gallery.js`, `load-content.js`, `nav.js`, `qrcode.js`, `reveal.js`, `theme.js`
-
-## Key features
-
-- Animated canvas background (`js/background.js`).
-- Mobile-friendly navigation toggle (`js/nav.js`).
-- QR code generator for sharing links (`js/qrcode.js`).
-- Scroll reveal animations (`js/reveal.js`).
-- Gallery utilities and content loader scripts.
-- Simple serverless `api/save-content.js` for form or content saving (used when deployed).
-
-## Usage
-
-1. Open `index.html` in your browser for a local static preview.
-2. For a development server, use any static server (Live Server extension, `serve`, or similar). Example with `npm` + `serve`:
-
-```powershell
-npm install -g serve
-serve . -p 3000
+```text
+├── api/
+│   └── save-content.js     # Vercel serverless saving checkpoint pipeline
+├── css/
+│   ├── themes.css          # Master palette definition arrays (Midnight, Ocean, etc.)
+│   ├── base.css            # Root configurations, responsive breakpoints, global resets
+│   ├── nav.css             # Navigation menus and mobile drawer tracking
+│   ├── hero.css            # Header intro profile framing assets
+│   ├── about.css           # Grid layouts and technical skill tags
+│   ├── projects.css        # Interactive progress trackers and stack matrices
+│   ├── gallery.css         # Journey masonry grids and fluid modal lightboxes
+│   ├── contact.css         # Communication anchors and custom QR layout wrappers
+│   ├── admin.css           # Hidden pin-pad overlay system and layout dashboard
+│   ├── footer.css          # Baseline copyright notices and links
+│   ├── theme-switcher.css  # Floating palette interface settings
+│   └── theme-overrides.css # High-priority paint bindings (Loaded last)
+├── js/
+│   ├── theme.js            # Persistent local storage theme assignment module
+│   ├── nav.js              # Mobile burger interaction triggers
+│   ├── background.js       # Dynamic multi-orb HTML5 canvas graphic driver
+│   ├── load-content.js     # Asynchronous file data injector & observer loops
+│   ├── admin.js            # Secure pin authentication & UI workspace generator
+│   └── gallery.js          # Modal lightbox image controllers
+├── index.html              # Core single-page layout document structure
+├── data.json               # Local operational storage state database file
+├── vercel.json             # Dynamic proxy rerouting routing manifest
+└── package.json            # Development tools dependency configuration manifest
 ```
 
-3. The QR widget reads the input value and regenerates when you click the generate button.
+## Key Features
 
-## Deployment
+- **Animated Canvas Background** (`js/background.js`): Uses a low-overhead, screen-blending script that reads theme properties dynamically to animate glowing vector entities.
+- **Dynamic Palette Theme Engine** (`js/theme.js`): Switches variable profiles instantly on demand (Midnight, Ocean, Forest, Dusk, Ember) and retains selections via localized browser states.
+- **Asynchronous Content Loader** (`js/load-content.js`): Queries, computes structural parameters, and renders card progress indicators dynamically while preserving viewport performance via Intersection Observers.
+- **PIN-Gated Administrative Dashboard** (`js/admin.js`): Implements a 4-digit PIN pad overlay featuring client-side SHA-256 WebCrypto data processing.
+- **Automated Upstream Commit Engine** (`api/save-content.js`): Converts adjustments to base64 formatting streams and writes files back into production automatically via GitHub repositories API loops.
 
-- This project can be deployed as a static site (Vercel recommended — `vercel` will detect `index.html`).
-- Serverless endpoints live under `api/` and will be used by Vercel/other serverless hosts.
+## Deployment & Production Hosting
 
-## Development notes
-
-- CSS and JS are modular by feature; update the corresponding files under `css/` and `js/` when adding new sections.
-- Improve accessibility by adding ARIA attributes to the nav toggle and form elements.
-
-## Git workflow notes
-
-- To iterate on a testing branch:
-
-```powershell
-git checkout testing-publish
-# make changes
-git add .
-git commit -m "testing new feature"
-git push
-```
-
-- Merge back to `main` when ready:
-
-```powershell
-git checkout main
-git merge testing-publish
-git push
-```
+This workspace is fully optimized to compile natively inside the Vercel edge framework:
+- Local script components communicate changes straight to `/api/save-content`.
+- Production rewrite constraints are dynamically orchestrated by `vercel.json`.
 
 ---
 
-If you'd like, I can also:
+### ⚡ Operational Run Script Notes
 
-- add a short `Contributing` section and code style notes,
-- add a minimal `package.json` script for serving locally, or
-- run a quick link check to ensure referenced filenames match the repo.
-
-Before coding:     git pull origin main
-After coding:      git add . → git commit → git push
-Content changes:   always via admin panel only
+**Before Coding:**      `git pull origin main`  
+**After Coding:**       `git add .` → `git commit -m "update"` → `git push`  
+**Content Modifications:** ALWAYS apply edits through the authenticated `#admin` dashboard UI loop only.
 
 ---
 
-Run the project locally using this command:
+### Local Runway Scripts
 
-- python -m http.server 8000
+To activate the dynamic runtime simulator environment locally on your terminal window, use this approach:
 
-then open:
+```powershell
+npm run dev
+```
 
-- http://127.0.0.1:8000
-- http://127.0.0.1:8000/#admin
+Once running, navigate your target web client straight into these endpoints:
+- **Site URL:** http://localhost:3000
+- **Admin CMS URL:** http://localhost:3000/#admin

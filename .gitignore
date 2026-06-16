@@ -33,3 +33,4 @@ out/
 # Misc
 *.log
 .cache/
+.vercel

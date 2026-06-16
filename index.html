@@ -1,13 +1,12 @@
-<!-- FILE: portfolio/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Christian John K. Lague — BSIS</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link href="https://googleapis.com" rel="stylesheet"/>
 
-  <!-- CSS Modules — themes.css MUST be last to override all others -->
+  <!-- CSS Modules -->
   <link rel="stylesheet" href="css/themes.css"/>
   <link rel="stylesheet" href="css/base.css"/>
   <link rel="stylesheet" href="css/nav.css"/>
@@ -20,7 +19,6 @@
   <link rel="stylesheet" href="css/footer.css"/>
   <link rel="stylesheet" href="css/theme-switcher.css"/>
   <link rel="stylesheet" href="css/theme-overrides.css"/>
-
 </head>
 <body>
 
@@ -119,7 +117,7 @@
         <span class="gradient-text">Let's</span><br>
         <span class="gradient-text">Connect.</span>
       </h2>
-      <p class="contact-sub">Open to opportunities, collaborations,<br>and interesting conversations.</p>
+      <p class="contact-sub">Open to opportunities, collaborations, and interesting conversations.</p>
       <a href="mailto:christian@email.com" class="contact-email">christian@email.com</a>
     </div>
     <div class="qr-block reveal">
@@ -131,10 +129,10 @@
         <div class="qr-corner br"></div>
         <div id="qrcode"></div>
       </div>
-        <!-- QR URL is managed in the admin only; visitors don't see the input -->
     </div>
   </section>
 
+  <!-- Login Shield Structure -->
   <div id="admin-pin-overlay">
     <p class="pin-logo">CJL</p>
     <p class="pin-label">Admin Access</p>
@@ -158,6 +156,7 @@
     <p class="pin-error" id="pin-error"></p>
   </div>
 
+  <!-- Dashboard Workspace Shield Container -->
   <div id="admin-panel">
     <div class="admin-header">
       <span class="admin-title">Admin Panel <span>Portfolio Editor</span></span>
@@ -196,14 +195,13 @@
     </div>
   </footer>
 
+  <!-- Script Execution Graph -->
   <script src="js/theme.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cloudflare.com"></script>
   <script src="js/nav.js"></script>
   <script src="js/background.js"></script>
-    <script src="js/qrcode.js"></script>
-    <script src="js/load-content.js"></script>
-  <script src="js/gallery.js"></script>
-  <script src="js/reveal.js"></script>
+  <script src="js/qrcode.js"></script>
+  <script src="js/load-content.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>
