@@ -283,6 +283,250 @@
 .admin-field input:focus,
 .admin-field textarea:focus { border-color: rgba(255,255,255,0.35); }
 
+/* ── Direct form labels (used by sections) ── */
+.admin-label {
+  display: block;
+  font-size: 0.67rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gray-3);
+  margin-bottom: 0.4rem;
+  margin-top: 1rem;
+}
+
+.admin-label:first-of-type { margin-top: 0; }
+
+/* ── Direct form inputs/textareas (used by sections) ── */
+.admin-input,
+.admin-textarea {
+  display: block;
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white);
+  padding: 0.65rem 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.25s;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: 0.75rem;
+}
+
+.admin-input:focus,
+.admin-textarea:focus { 
+  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.05);
+}
+
+.admin-select {
+  display: block;
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white);
+  padding: 0.65rem 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.25s;
+  box-sizing: border-box;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+}
+
+.admin-select:focus { border-color: rgba(255,255,255,0.35); }
+.admin-select option { background: #0d0d0d; color: var(--white); }
+
+/* ── Buttons ── */
+.admin-btn-add {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.15);
+  color: var(--gray-3);
+  padding: 0.5rem 1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-btn-add:hover { 
+  color: var(--white); 
+  border-color: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.02);
+}
+
+/* ── Project Cards ── */
+.admin-proj-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 1.25rem;
+  background: rgba(255,255,255,0.02);
+  margin-bottom: 1.25rem;
+  border-radius: 4px;
+}
+
+.admin-proj-card .admin-label { margin-top: 0.75rem; }
+.admin-proj-card .admin-input { margin-bottom: 0.5rem; }
+
+.admin-proj-num {
+  font-size: 0.75rem;
+  opacity: 0.5;
+}
+
+.admin-proj-remove {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--gray-3);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-proj-remove:hover { 
+  color: #ff6b6b; 
+  border-color: #ff6b6b; 
+}
+
+.admin-proj-type,
+.admin-proj-status,
+.admin-proj-hint,
+.admin-proj-done {
+  margin-bottom: 0.5rem;
+}
+
+.admin-proj-done {
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+.admin-codename-input {
+  margin-bottom: 0.5rem;
+}
+
+.admin-codename-preview {
+  margin: 0.5rem 0 1rem;
+  min-height: 2rem;
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 1.3rem;
+}
+
+/* ── Stack Rows ── */
+.admin-stack-row {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+}
+
+.admin-stack-header {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.admin-stack-name {
+  flex: 1;
+  margin-bottom: 0 !important;
+}
+
+.admin-stack-remove {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--gray-3);
+  padding: 0.35rem 0.5rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.admin-stack-remove:hover { 
+  color: #ff6b6b; 
+  border-color: #ff6b6b; 
+}
+
+.admin-stack-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-stack-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.admin-stack-slider {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.1);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.admin-stack-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--white);
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.admin-stack-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--white);
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.admin-stack-pct-label {
+  font-size: 0.75rem;
+  color: var(--gray-3);
+  min-width: 40px;
+  text-align: right;
+}
+
+.admin-add-stack {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+/* ── Gallery Items ── */
+.admin-gallery-item {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.admin-gal-cat,
+.admin-gal-cap,
+.admin-gal-src {
+  margin-bottom: 0.75rem;
+}
+
 /* ── IMAGE UPLOAD ── */
 .img-upload-area {
   width: 100%;
