@@ -821,3 +821,59 @@
 
 .pin-change-status.success { color: #6bcb77; }
 .pin-change-status.error   { color: #ff6b6b; }
+
+/* ============================================================
+   MOBILE RESPONSIVE OVERRIDES FOR THE ADMIN WORKSPACE
+   ============================================================ */
+@media (max-width: 820px) {
+  /* Stack the dashboard sidebar layout vertically instead of a rigid two-column grid */
+  .admin-body {
+    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100vh - 110px) !important;
+  }
+
+  /* Make the sidebar a compact horizontal scrolling navigation dock */
+  .admin-sidebar {
+    position: relative !important;
+    top: 0 !important;
+    height: auto !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 0.5rem !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    white-space: nowrap !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Adjust tab items for effortless touch interaction targets */
+  .admin-tab {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.65rem !important;
+    border-left: none !important;
+    border-bottom: 2px solid transparent !important;
+    display: inline-block !important;
+  }
+
+  .admin-tab.active {
+    border-left-color: transparent !important;
+    border-bottom-color: var(--accent) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  /* Give the active content pane breathing room and native kinetic touch momentum */
+  .admin-content {
+    padding: 1.25rem !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-section-title {
+    font-size: 1.1rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+}

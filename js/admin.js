@@ -169,17 +169,23 @@
         }
     }
 
-    function renderActiveSection() {
+        function renderActiveSection() {
         document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
         const el = document.getElementById(`section-${activeTab}`);
         if (!el) return;
         el.classList.add('active');
+        
         if (activeTab === 'hero') renderHeroSection(el);
         else if (activeTab === 'about') renderAboutSection(el);
         else if (activeTab === 'projects') renderProjectsSection(el);
         else if (activeTab === 'gallery') renderGallerySection(el);
         else if (activeTab === 'contact') renderContactSection(el);
         else if (activeTab === 'settings') renderSettingsSection(el);
+
+        // FIX: Forces all textareas to immediately auto-expand to their text bounds on tab change
+        el.querySelectorAll('textarea.admin-textarea').forEach(textarea => {
+            autoResizeTextarea(textarea);
+        });
     }
 /* FILE: portfolio/js/admin.js — REVISED PART 3 OF 4 */
     function renderHeroSection(el) {
