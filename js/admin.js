@@ -30,6 +30,13 @@
             .replace(/'/g, '&#39;');
     }
 
+    // ── Textarea Auto-Growing Adjuster ──
+    function autoResizeTextarea(el) {
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         loadData().then(() => {
             buildPinOverlay();
@@ -214,29 +221,63 @@
           <h3 class="admin-section-title">About Layout</h3>
           <label class="admin-label">Visual Heading (Use \\n for design linebreaks)</label>
           <input class="admin-input" id="a-heading" value="${esc((a.heading||'').replace(/\n/g,'\\n'))}"/>
-          <label class="admin-label">Bio Introduction Paragraph 1 (HTML allowed)</label>
-          <textarea class="admin-textarea" id="a-bio1" rows="4">${esc(a.bio1||'')}</textarea>
-          <label class="admin-label">Bio Details Paragraph 2 (HTML allowed)</label>
-          <textarea class="admin-textarea" id="a-bio2" rows="4">${esc(a.bio2||'')}</textarea>
-          <label class="admin-label">Core Competencies / Skills (One item per text line)</label>
-          <textarea class="admin-textarea" id="a-skills" rows="6">${(a.skills||[]).join('\n')}</textarea>
+          
+          <label class="admin-label">Bio Introduction Paragraph 1 (Rich Text Editor)</label>
+          <div class="rte-toolbar" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+            <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">B</button>
+            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">I</button>
+            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">U</button>
+          </div>
+          <div class="admin-textarea" id="a-bio1-editor" contenteditable="true" style="min-height:100px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; overflow-y:auto; transition:border-color 0.2s;">${a.bio1 || ''}</div>
+          
+          <label class="admin-label">Bio Details Paragraph 2 (Rich Text Editor)</label>
+          <div class="rte-toolbar" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+            <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">B</button>
+            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">I</button>
+            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">U</button>
+          </div>
+          <div class="admin-textarea" id="a-bio2-editor" contenteditable="true" style="min-height:100px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; overflow-y:auto; transition:border-color 0.2s;">${a.bio2 || ''}</div>
+          
+          <label class="admin-label">Core Competencies / Skills (Click input to expand, one per line)</label>
+          <textarea class="admin-textarea" id="a-skills" rows="3" style="overflow:hidden; resize:none; transition:height 0.15s ease-out;">${(a.skills||[]).join('\n')}</textarea>
         `;
+
+        el.querySelectorAll('.rte-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.execCommand(btn.dataset.cmd, false, null);
+            });
+        });
+
+        const b1 = el.querySelector('#a-bio1-editor');
+        if (b1) {
+            b1.addEventListener('input', () => { data.about = data.about || {}; data.about.bio1 = b1.innerHTML; });
+            b1.addEventListener('focus', () => b1.style.borderColor = 'var(--accent)');
+            b1.addEventListener('blur', () => b1.style.borderColor = 'rgba(255,255,255,0.1)');
+        }
+
+        const b2 = el.querySelector('#a-bio2-editor');
+        if (b2) {
+            b2.addEventListener('input', () => { data.about = data.about || {}; data.about.bio2 = b2.innerHTML; });
+            b2.addEventListener('focus', () => b2.style.borderColor = 'var(--accent)');
+            b2.addEventListener('blur', () => b2.style.borderColor = 'rgba(255,255,255,0.1)');
+        }
+
         el.querySelector('#a-heading').addEventListener('input', e => {
             data.about = data.about || {};
             data.about.heading = e.target.value.replace(/\\n/g, '\n');
         });
-        el.querySelector('#a-bio1').addEventListener('input', e => {
-            data.about = data.about || {};
-            data.about.bio1 = e.target.value;
-        });
-        el.querySelector('#a-bio2').addEventListener('input', e => {
-            data.about = data.about || {};
-            data.about.bio2 = e.target.value;
-        });
-        el.querySelector('#a-skills').addEventListener('input', e => {
-            data.about = data.about || {};
-            data.about.skills = e.target.value.split('\n').filter(Boolean);
-        });
+
+        const skillsTextarea = el.querySelector('#a-skills');
+        autoResizeTextarea(skillsTextarea);
+        if (skillsTextarea) {
+            skillsTextarea.addEventListener('focus', () => autoResizeTextarea(skillsTextarea));
+            skillsTextarea.addEventListener('input', () => autoResizeTextarea(skillsTextarea));
+            skillsTextarea.addEventListener('change', e => {
+                data.about = data.about || {};
+                data.about.skills = e.target.value.split('\n').filter(Boolean);
+            });
+        }
     }
 
     function renderProjectsSection(el) {
@@ -252,64 +293,111 @@
               <input class="admin-input" value="${esc(p.type)}" onchange="window.__adminUpdateProj(${idx}, 'type', this.value)"/>
               <label class="admin-label">Operational Status Text</label>
               <input class="admin-input" value="${esc(p.status)}" onchange="window.__adminUpdateProj(${idx}, 'status', this.value)"/>
-              <label class="admin-label">Highlight Finished Theme (Completed Indicator Flag)</label>
+              <label class="admin-label">Highlight Finished Theme</label>
               <select class="admin-select" onchange="window.__adminUpdateProj(${idx}, 'statusDone', this.value === 'true')">
                 <option value="false" ${!p.statusDone ? 'selected' : ''}>Active Work in Progress</option>
                 <option value="true" ${p.statusDone ? 'selected' : ''}>Production Complete</option>
               </select>
               <label class="admin-label">Context Hint / Card Description</label>
               <input class="admin-input" value="${esc(p.hint)}" onchange="window.__adminUpdateProj(${idx}, 'hint', this.value)"/>
-              <label class="admin-label">Technology Stack Matrix (Format Name:Percentage, item per line, e.g. React:85)</label>
-              <textarea class="admin-textarea" rows="3" onchange="window.__adminUpdateProjStack(${idx}, this.value)">${(p.stack || []).map(s => `${s.name}:${s.pct}`).join('\n')}</textarea>
+              <label class="admin-label">Technology Stack Matrix (Format Name:Percentage, click to expand)</label>
+              <textarea class="admin-textarea" rows="2" style="overflow:hidden; resize:none;" onfocus="autoResizeTextarea(this)" oninput="autoResizeTextarea(this)" onchange="window.__adminUpdateProjStack(${idx}, this.value)">${(p.stack || []).map(s => `${s.name}:${s.pct}`).join('\n')}</textarea>
             </div>`;
         });
         html += `<button class="admin-save-btn" style="background:transparent; color:#fff; border:1px dashed #555; width:100%;" id="add-proj-btn">+ Add New Project Space</button>`;
         el.innerHTML = html;
         el.querySelector('#add-proj-btn').addEventListener('click', () => {
-            data.projects.push({
-                num: "00" + (data.projects.length + 1),
-                status: "In Progress",
-                statusDone: false,
-                type: "New System",
-                hint: "💡 Hint: Update details.",
-                stack: []
-            });
+            data.projects.push({ num: "00" + (data.projects.length + 1), status: "In Progress", statusDone: false, type: "New System", hint: "💡 Hint: Update details.", stack: [] });
             renderProjectsSection(el);
         });
     }
-
-    window.__adminUpdateProj = (idx, field, val) => {
-        data.projects[idx][field] = val;
-    };
-    window.__adminUpdateProjStack = (idx, val) => {
-        data.projects[idx].stack = val.split('\n').filter(Boolean).map(line => {
-            const parts = line.split(':');
-            return {
-                name: parts[0] ? parts[0].trim() : 'Tech',
-                pct: parts[1] ? parseInt(parts[1], 10) || 50 : 50
-            };
-        });
-    };
-    window.__adminRemoveProj = (idx) => {
-        data.projects.splice(idx, 1);
-        renderProjectsSection(document.getElementById('section-projects'));
-    };
 /* FILE: portfolio/js/admin.js — PART 4 OF 4 */
     function renderGallerySection(el) {
         data.gallery = data.gallery || [];
-        let html = `<h3 class="admin-section-title">Visual Archive & Journey Gallery</h3>`;
+        const currentCategories = Array.from(new Set(data.gallery.map(g => g.category).filter(Boolean)));
+        if (currentCategories.length === 0) { currentCategories.push("Org Life", "Thesis", "Events", "Academics", "Friends"); }
+
+        let html = `
+          <h3 class="admin-section-title">Visual Archive & Journey Gallery</h3>
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border:1px solid #222; margin-bottom:1.5rem;">
+            <label class="admin-label" style="margin-top:0;">Manage Filter Categories Matrix</label>
+            <div id="category-badge-list" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+              ${currentCategories.map(cat => `
+                <span style="background:#222; padding:4px 10px; font-size:0.75rem; border:1px solid #444; display:inline-flex; align-items:center; gap:0.5rem;">
+                  ${esc(cat)}
+                  <b style="color:#ff6b6b; cursor:pointer;" onclick="window.__adminPurgeCategory('${esc(cat)}')">✕</b>
+                </span>
+              `).join('')}
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+              <input class="admin-input" type="text" id="new-category-input" placeholder="Create new filter tag..." style="margin-bottom:0;"/>
+              <button class="admin-save-btn" type="button" id="add-category-btn" style="white-space:nowrap;">Add Tag</button>
+            </div>
+          </div>
+          <label class="admin-label">Image Grid Items Vault</label>
+        `;
+
         data.gallery.forEach((g, idx) => {
             html += `
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; border-bottom:1px solid #222; padding-bottom:0.5rem; margin-bottom:0.5rem;"> 
-              <input class="admin-input" placeholder="Category Type" value="${esc(g.category)}" onchange="window.__adminUpdateGal(${idx}, 'category', this.value)"/> 
-              <input class="admin-input" placeholder="Image File Path/URL" value="${esc(g.src)}" onchange="window.__adminUpdateGal(${idx}, 'src', this.value)"/> 
-              <input class="admin-input" style="grid-column: span 2;" placeholder="Captions description text..." value="${esc(g.caption)}" onchange="window.__adminUpdateGal(${idx}, 'caption', this.value)"/> 
+            <div style="border: 1px solid #222; background:rgba(0,0,0,0.2); padding:1rem; margin-bottom:1rem; display:grid; grid-template-columns: 1fr; gap:0.5rem; position:relative;">
+              <button style="position:absolute; right:1rem; top:1rem; background:#ff6b6b; border:none; color:white; padding:2px 8px; cursor:pointer; z-index:5;" onclick="window.__adminRemoveGal(${idx})">Remove Photo</button>
+              <label class="admin-label">Category Alignment</label>
+              <select class="admin-select" style="margin-bottom:0.25rem;" onchange="window.__adminUpdateGal(${idx}, 'category', this.value)">
+                ${currentCategories.map(cat => `<option value="${esc(cat)}" ${g.category === cat ? 'selected' : ''}>${esc(cat)}</option>`).join('')}
+              </select>
+              <label class="admin-label">Visual Asset File (Click below to Upload Image)</label>
+              <div style="display:flex; gap:1rem; align-items:center;">
+                <input type="file" accept="image/*" style="display:none;" id="file-uploader-${idx}" onchange="window.__adminProcessPhotoUpload(${idx}, this)"/>
+                <button class="admin-close-btn" type="button" style="margin:0;" onclick="document.getElementById('file-uploader-${idx}').click()">📁 Choose Image File</button>
+                <div id="preview-frame-${idx}" style="width:50px; height:50px; background:#111; border:1px solid #333; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                  ${g.src ? `<img src="${g.src}" style="width:100%; height:100%; object-fit:cover;"/>` : `<span style="font-size:0.5rem; color:#444;">No file</span>`}
+                </div>
+              </div>
+              <label class="admin-label">Captions Description Text</label>
+              <input class="admin-input" style="margin-bottom:0;" placeholder="Enter narrative descriptions..." value="${esc(g.caption)}" onchange="window.__adminUpdateGal(${idx}, 'caption', this.value)"/>
             </div>`;
         });
+
+        html += `<button class="admin-save-btn" style="background:transparent; color:#fff; border:1px dashed #555; width:100%; margin-top:0.5rem;" id="add-photo-btn">+ Add New Photo Card Space</button>`;
         el.innerHTML = html;
+
+        el.querySelector('#add-category-btn').addEventListener('click', () => {
+            const inp = el.querySelector('#new-category-input');
+            const val = inp.value.trim();
+            if (val) {
+                data.gallery.push({ category: val, caption: "", src: "" });
+                renderGallerySection(el);
+            }
+        });
+
+        el.querySelector('#add-photo-btn').addEventListener('click', () => {
+            const fallbackCat = currentCategories[0] || "Org Life";
+            data.gallery.push({ category: fallbackCat, caption: "", src: "" });
+            renderGallerySection(el);
+        });
     }
-    window.__adminUpdateGal = (idx, field, val) => {
-        data.gallery[idx][field] = val;
+
+    window.__adminUpdateGal = (idx, field, val) => { data.gallery[idx][field] = val; };
+    window.__adminRemoveGal = (idx) => { data.gallery.splice(idx, 1); renderGallerySection(document.getElementById('section-gallery')); };
+    window.__adminPurgeCategory = (categoryName) => {
+        data.gallery = data.gallery.filter(g => g.category !== categoryName);
+        renderGallerySection(document.getElementById('section-gallery'));
+    };
+
+    window.__adminProcessPhotoUpload = (idx, inputElement) => {
+        const file = inputElement.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        const previewFrame = document.getElementById(`preview-frame-${idx}`);
+        if (previewFrame) previewFrame.innerHTML = `<span style="font-size:0.5rem; color:var(--accent);">Reading...</span>`;
+        reader.onload = function(event) {
+            const base64DataUrl = event.target.result;
+            data.gallery[idx].src = base64DataUrl;
+            if (previewFrame) {
+                previewFrame.innerHTML = `<img src="${base64DataUrl}" style="width:100%; height:100%; object-fit:cover;"/>`;
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     function renderContactSection(el) {
@@ -365,18 +453,14 @@
         try {
             const res = await fetch(SAVE_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
             const result = await res.json();
             if (res.ok && result.ok) {
                 status.textContent = 'Data successfully committed to GitHub repository!';
                 status.className = 'admin-status success';
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1200);
+                setTimeout(() => { window.location.reload(); }, 1200);
             } else {
                 throw new Error(result.error || 'Server rejected changes');
             }
@@ -386,4 +470,19 @@
             btn.disabled = false;
         }
     }
+
+    window.__adminUpdateProj = (idx, field, val) => { data.projects[idx][field] = val; };
+    window.__adminUpdateProjStack = (idx, val) => {
+        data.projects[idx].stack = val.split('\n').filter(Boolean).map(line => {
+            const parts = line.split(':');
+            return {
+                name: parts[0] ? parts[0].trim() : 'Tech',
+                pct: parts[1] ? parseInt(parts[1], 10) || 50 : 50
+            };
+        });
+    };
+    window.__adminRemoveProj = (idx) => {
+        data.projects.splice(idx, 1);
+        renderProjectsSection(document.getElementById('section-projects'));
+    };
 })();

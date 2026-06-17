@@ -66,7 +66,8 @@ This workspace is fully optimized to compile natively inside the Vercel edge fra
 To activate the dynamic runtime simulator environment locally on your terminal window, use this approach:
 
 ```powershell
-npm run dev
+npm run start-local
+structural changes out live to production, use npm run deploy.
 ```
 
 Once running, navigate your target web client straight into these endpoints:
