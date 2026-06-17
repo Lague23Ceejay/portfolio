@@ -1,4 +1,4 @@
-/* FILE: portfolio/js/admin.js — PART 1 OF 4 */
+/* FILE: portfolio/js/admin.js — PART 1 OF 3 */
 (function() {
     'use strict';
 
@@ -61,7 +61,7 @@
         const dots = document.querySelectorAll('#admin-pin-overlay .pin-dot');
         dots.forEach((d, i) => d.classList.toggle('filled', i < pinBuffer.length));
     }
-/* FILE: portfolio/js/admin.js — PART 2 OF 4 */
+/* FILE: portfolio/js/admin.js — PART 2 OF 3 */
     function buildPinOverlay() {
         const overlay = document.getElementById('admin-pin-overlay');
         if (!overlay) return;
@@ -224,33 +224,47 @@
           
           <label class="admin-label">Bio Introduction Paragraph 1 (Rich Text Editor)</label>
           <div class="rte-toolbar" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
-            <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">B</button>
-            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">I</button>
-            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">U</button>
+            <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">B</button>
+            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">I</button>
+            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">U</button>
           </div>
-          <div class="admin-textarea" id="a-bio1-editor" contenteditable="true" style="min-height:100px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; overflow-y:auto; transition:border-color 0.2s;">${a.bio1 || ''}</div>
+          <div class="admin-textarea" id="a-bio1-editor" contenteditable="true" style="min-height:100px; height:auto; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; transition:border-color 0.2s; word-break:break-word;">${a.bio1 || ''}</div>
           
           <label class="admin-label">Bio Details Paragraph 2 (Rich Text Editor)</label>
           <div class="rte-toolbar" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
-            <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">B</button>
-            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">I</button>
-            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:2px 8px; cursor:pointer;">U</button>
+            <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">B</button>
+            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:2px 12px; cursor:pointer;">I</button>
+            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">U</button>
           </div>
-          <div class="admin-textarea" id="a-bio2-editor" contenteditable="true" style="min-height:100px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; overflow-y:auto; transition:border-color 0.2s;">${a.bio2 || ''}</div>
+          <div class="admin-textarea" id="a-bio2-editor" contenteditable="true" style="min-height:100px; height:auto; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; transition:border-color 0.2s; word-break:break-word;">${a.bio2 || ''}</div>
           
-          <label class="admin-label">Core Competencies / Skills (Click input to expand, one per line)</label>
-          <textarea class="admin-textarea" id="a-skills" rows="3" style="overflow:hidden; resize:none; transition:height 0.15s ease-out;">${(a.skills||[]).join('\n')}</textarea>
+          <label class="admin-label">Core Competencies / Skills (Auto-expands as you type, one per line)</label>
+          <textarea class="admin-textarea" id="a-skills" rows="3" style="overflow:hidden; resize:none; transition:height 0.1s ease-out; display:block;">${(a.skills||[]).join('\n')}</textarea>
         `;
+
+        function runCommand(cmd) {
+            document.execCommand(cmd, false, null);
+        }
+
+        function handleRTEKeydown(e) {
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
+                const key = e.key.toLowerCase();
+                if (key === 'b') { e.preventDefault(); runCommand('bold'); }
+                if (key === 'i') { e.preventDefault(); runCommand('italic'); }
+                if (key === 'u') { e.preventDefault(); runCommand('underline'); }
+            }
+        }
 
         el.querySelectorAll('.rte-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                document.execCommand(btn.dataset.cmd, false, null);
+                runCommand(btn.dataset.cmd);
             });
         });
 
         const b1 = el.querySelector('#a-bio1-editor');
         if (b1) {
+            b1.addEventListener('keydown', handleRTEKeydown);
             b1.addEventListener('input', () => { data.about = data.about || {}; data.about.bio1 = b1.innerHTML; });
             b1.addEventListener('focus', () => b1.style.borderColor = 'var(--accent)');
             b1.addEventListener('blur', () => b1.style.borderColor = 'rgba(255,255,255,0.1)');
@@ -258,6 +272,7 @@
 
         const b2 = el.querySelector('#a-bio2-editor');
         if (b2) {
+            b2.addEventListener('keydown', handleRTEKeydown);
             b2.addEventListener('input', () => { data.about = data.about || {}; data.about.bio2 = b2.innerHTML; });
             b2.addEventListener('focus', () => b2.style.borderColor = 'var(--accent)');
             b2.addEventListener('blur', () => b2.style.borderColor = 'rgba(255,255,255,0.1)');
@@ -269,8 +284,8 @@
         });
 
         const skillsTextarea = el.querySelector('#a-skills');
-        autoResizeTextarea(skillsTextarea);
         if (skillsTextarea) {
+            autoResizeTextarea(skillsTextarea);
             skillsTextarea.addEventListener('focus', () => autoResizeTextarea(skillsTextarea));
             skillsTextarea.addEventListener('input', () => autoResizeTextarea(skillsTextarea));
             skillsTextarea.addEventListener('change', e => {
@@ -279,7 +294,7 @@
             });
         }
     }
-
+/* FILE: portfolio/js/admin.js — PART 4a OF 5 */
     function renderProjectsSection(el) {
         data.projects = data.projects || [];
         let html = `<h3 class="admin-section-title">Manage Tech Portfolio Work</h3>`;
@@ -301,7 +316,7 @@
               <label class="admin-label">Context Hint / Card Description</label>
               <input class="admin-input" value="${esc(p.hint)}" onchange="window.__adminUpdateProj(${idx}, 'hint', this.value)"/>
               <label class="admin-label">Technology Stack Matrix (Format Name:Percentage, click to expand)</label>
-              <textarea class="admin-textarea" rows="2" style="overflow:hidden; resize:none;" onfocus="autoResizeTextarea(this)" oninput="autoResizeTextarea(this)" onchange="window.__adminUpdateProjStack(${idx}, this.value)">${(p.stack || []).map(s => `${s.name}:${s.pct}`).join('\n')}</textarea>
+              <textarea class="admin-textarea" rows="2" style="overflow:hidden; resize:none; display:block;" onfocus="autoResizeTextarea(this)" oninput="autoResizeTextarea(this)" onchange="window.__adminUpdateProjStack(${idx}, this.value)">${(p.stack || []).map(s => `${s.name}:${s.pct}`).join('\n')}</textarea>
             </div>`;
         });
         html += `<button class="admin-save-btn" style="background:transparent; color:#fff; border:1px dashed #555; width:100%;" id="add-proj-btn">+ Add New Project Space</button>`;
@@ -311,7 +326,7 @@
             renderProjectsSection(el);
         });
     }
-/* FILE: portfolio/js/admin.js — PART 4 OF 4 */
+
     function renderGallerySection(el) {
         data.gallery = data.gallery || [];
         const currentCategories = Array.from(new Set(data.gallery.map(g => g.category).filter(Boolean)));
@@ -336,7 +351,7 @@
           </div>
           <label class="admin-label">Image Grid Items Vault</label>
         `;
-
+/* FILE: portfolio/js/admin.js — PART 4b OF 5 */
         data.gallery.forEach((g, idx) => {
             html += `
             <div style="border: 1px solid #222; background:rgba(0,0,0,0.2); padding:1rem; margin-bottom:1rem; display:grid; grid-template-columns: 1fr; gap:0.5rem; position:relative;">
@@ -399,7 +414,7 @@
         };
         reader.readAsDataURL(file);
     };
-
+/* FILE: portfolio/js/admin.js — PART 5 OF 5 */
     function renderContactSection(el) {
         const c = data.contact || {};
         el.innerHTML = `
@@ -486,3 +501,4 @@
         renderProjectsSection(document.getElementById('section-projects'));
     };
 })();
+
