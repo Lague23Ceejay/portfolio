@@ -338,6 +338,19 @@
 
 .admin-select:focus { border-color: rgba(255,255,255,0.35); }
 .admin-select option { background: #0d0d0d; color: var(--white); }
+/* Add this block at the very bottom of your admin.css file */
+
+.admin-textarea b, 
+.admin-textarea strong {
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+.admin-textarea i, 
+.admin-textarea em {
+  font-style: italic !important;
+}
+
 
 /* ── Buttons ── */
 .admin-btn-add {

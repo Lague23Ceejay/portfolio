@@ -181,7 +181,7 @@
         else if (activeTab === 'contact') renderContactSection(el);
         else if (activeTab === 'settings') renderSettingsSection(el);
     }
-/* FILE: portfolio/js/admin.js — PART 3 OF 4 */
+/* FILE: portfolio/js/admin.js — REVISED PART 3 OF 4 */
     function renderHeroSection(el) {
         const h = data.hero || {};
         el.innerHTML = `
@@ -225,8 +225,8 @@
           <label class="admin-label">Bio Introduction Paragraph 1 (Rich Text Editor)</label>
           <div class="rte-toolbar" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
             <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">B</button>
-            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">I</button>
-            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">U</button>
+            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:2px 12px; cursor:pointer;">I</button>
+            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:2px 12px; cursor:pointer;">U</button>
           </div>
           <div class="admin-textarea" id="a-bio1-editor" contenteditable="true" style="min-height:100px; height:auto; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; transition:border-color 0.2s; word-break:break-word;">${a.bio1 || ''}</div>
           
@@ -242,23 +242,24 @@
           <textarea class="admin-textarea" id="a-skills" rows="3" style="overflow:hidden; resize:none; transition:height 0.1s ease-out; display:block;">${(a.skills||[]).join('\n')}</textarea>
         `;
 
-        function runCommand(cmd) {
+        // Modern, predictable alternative to execCommand formatting toggles
+        function toggleStyleCommand(cmd) {
             document.execCommand(cmd, false, null);
         }
 
         function handleRTEKeydown(e) {
             if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
                 const key = e.key.toLowerCase();
-                if (key === 'b') { e.preventDefault(); runCommand('bold'); }
-                if (key === 'i') { e.preventDefault(); runCommand('italic'); }
-                if (key === 'u') { e.preventDefault(); runCommand('underline'); }
+                if (key === 'b') { e.preventDefault(); toggleStyleCommand('bold'); }
+                if (key === 'i') { e.preventDefault(); toggleStyleCommand('italic'); }
+                if (key === 'u') { e.preventDefault(); toggleStyleCommand('underline'); }
             }
         }
 
         el.querySelectorAll('.rte-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                runCommand(btn.dataset.cmd);
+                toggleStyleCommand(btn.dataset.cmd);
             });
         });
 
@@ -283,9 +284,10 @@
             data.about.heading = e.target.value.replace(/\\n/g, '\n');
         });
 
+        // Track and auto-grow input boxes dynamically on viewport active views
         const skillsTextarea = el.querySelector('#a-skills');
         if (skillsTextarea) {
-            autoResizeTextarea(skillsTextarea);
+            setTimeout(() => { autoResizeTextarea(skillsTextarea); }, 50);
             skillsTextarea.addEventListener('focus', () => autoResizeTextarea(skillsTextarea));
             skillsTextarea.addEventListener('input', () => autoResizeTextarea(skillsTextarea));
             skillsTextarea.addEventListener('change', e => {
@@ -294,6 +296,7 @@
             });
         }
     }
+
 /* FILE: portfolio/js/admin.js — PART 4a OF 5 */
     function renderProjectsSection(el) {
         data.projects = data.projects || [];
