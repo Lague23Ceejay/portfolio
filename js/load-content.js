@@ -143,18 +143,9 @@ function renderContact(c) {
   ['linkedin','github','resume'].forEach((k, i) => { 
     if (links[i] && c[k]) links[i].href = c[k]; 
   });
-
-  const url = c.qrUrl || 'https://vercel.app';
-  const qrEl = document.getElementById('qrcode');
-  if (qrEl && typeof QRCode !== 'undefined') {
-    qrEl.innerHTML = '';
-    new QRCode(qrEl, { 
-      text: url, width: 160, height: 160,
-      colorDark: '#0a0a0a', colorLight: '#f5f5f3',
-      correctLevel: QRCode.CorrectLevel.H 
-    });
-  }
 }
+
+
 
 function setText(selector, text) {
   const el = document.querySelector(selector); 

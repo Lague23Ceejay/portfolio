@@ -1,4 +1,4 @@
-/* FILE: portfolio/js/admin.js — PART 1 OF 3 */
+/* FILE: portfolio/js/admin.js — PART 1 OF 3 (BALANCED & SECURE) */
 (function() {
     'use strict';
 
@@ -27,7 +27,7 @@
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+            .replace(/'/g, '&#39;'); // FIX: Corrected raw literal single quote syntax escape
     }
 
     // ── Textarea Auto-Growing Adjuster ──
@@ -61,17 +61,10 @@
         const dots = document.querySelectorAll('#admin-pin-overlay .pin-dot');
         dots.forEach((d, i) => d.classList.toggle('filled', i < pinBuffer.length));
     }
-/* FILE: portfolio/js/admin.js — PART 2 OF 3 */
+
     function buildPinOverlay() {
         const overlay = document.getElementById('admin-pin-overlay');
         if (!overlay) return;
-        const navLogo = document.querySelector('.nav-logo');
-        if (navLogo) {
-            navLogo.style.cursor = 'pointer';
-            navLogo.addEventListener('click', () => {
-                window.location.hash = 'admin';
-            });
-        }
         overlay.querySelectorAll('.pin-btn[data-digit]').forEach(b => {
             b.addEventListener('click', () => handleDigit(b.dataset.digit));
         });
@@ -130,7 +123,7 @@
             });
         });
         const saveBtn = document.getElementById('admin-save-btn');
-        if (saveBtn) saveBtn.addEventListener('click', saveData);
+        if (saveBtn) saveBtn.addEventListener('click', () => saveData());
         const closeBtn = document.getElementById('admin-close-btn');
         if (closeBtn) closeBtn.addEventListener('click', () => {
             document.getElementById('admin-panel').classList.remove('open');
@@ -169,7 +162,7 @@
         }
     }
 
-        function renderActiveSection() {
+    function renderActiveSection() {
         document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
         const el = document.getElementById(`section-${activeTab}`);
         if (!el) return;
@@ -182,12 +175,11 @@
         else if (activeTab === 'contact') renderContactSection(el);
         else if (activeTab === 'settings') renderSettingsSection(el);
 
-        // FIX: Forces all textareas to immediately auto-expand to their text bounds on tab change
-        el.querySelectorAll('textarea.admin-textarea').forEach(textarea => {
-            autoResizeTextarea(textarea);
-        });
+        if (activeTab === 'contact' && typeof window.__adminRefreshQRMatrix === 'function') {
+            window.__adminRefreshQRMatrix();
+        }
     }
-/* FILE: portfolio/js/admin.js — REVISED PART 3 OF 4 */
+/* FILE: portfolio/js/admin.js — PART 2 OF 3 (WORKSPACE LAYOUT MODULES) */
     function renderHeroSection(el) {
         const h = data.hero || {};
         el.innerHTML = `
@@ -240,7 +232,7 @@
           <div class="rte-toolbar" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
             <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">B</button>
             <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:2px 12px; cursor:pointer;">I</button>
-            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">U</button>
+            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:2px 12px; cursor:pointer;">U</button>
           </div>
           <div class="admin-textarea" id="a-bio2-editor" contenteditable="true" style="min-height:100px; height:auto; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; transition:border-color 0.2s; word-break:break-word;">${a.bio2 || ''}</div>
           
@@ -248,7 +240,7 @@
           <textarea class="admin-textarea" id="a-skills" rows="3" style="overflow:hidden; resize:none; transition:height 0.1s ease-out; display:block;">${(a.skills||[]).join('\n')}</textarea>
         `;
 
-        // Modern, predictable alternative to execCommand formatting toggles
+        // FIX: Re-nested inner logic modules safely inside function boundary wrappers
         function toggleStyleCommand(cmd) {
             document.execCommand(cmd, false, null);
         }
@@ -290,12 +282,122 @@
             data.about.heading = e.target.value.replace(/\\n/g, '\n');
         });
 
-        // Track and auto-grow input boxes dynamically on viewport active views
         const skillsTextarea = el.querySelector('#a-skills');
         if (skillsTextarea) {
             setTimeout(() => { autoResizeTextarea(skillsTextarea); }, 50);
             skillsTextarea.addEventListener('focus', () => autoResizeTextarea(skillsTextarea));
             skillsTextarea.addEventListener('input', () => autoResizeTextarea(skillsTextarea));
+            skillsTextarea.addEventListener('change', e => {
+                data.about = data.about || {};
+                data.about.skills = e.target.value.split('\n').filter(Boolean);
+            });
+        }
+    }
+
+/* FILE: portfolio/js/admin.js — PART 3a OF 5 */
+    function renderHeroSection(el) {
+        const h = data.hero || {};
+        el.innerHTML = `
+          <h3 class="admin-section-title">Hero Configuration</h3>
+          <label class="admin-label">Eyebrow Notification Text</label>
+          <input class="admin-input" id="a-eyebrow" value="${esc(h.eyebrow || '')}"/>
+          <label class="admin-label">First Name</label>
+          <input class="admin-input" id="a-firstName" value="${esc(h.firstName || '')}"/>
+          <label class="admin-label">Last Name / Suffix</label>
+          <input class="admin-input" id="a-lastName" value="${esc(h.lastName || '')}"/>
+          <label class="admin-label">Degree Subtitle Title</label>
+          <input class="admin-input" id="a-subtitle" value="${esc(h.subtitle || '')}"/>
+          <label class="admin-label">Work / Location Tagline</label>
+          <input class="admin-input" id="a-location" value="${esc(h.location || '')}"/>
+          <label class="admin-label">Profile Image URL Path</label>
+          <input class="admin-input" id="a-profileImage" value="${esc(h.profileImage || '')}"/>
+          <label class="admin-label">Profile Crop Frame</label>
+          <select class="admin-select" id="a-profileFrame">
+            <option value="circle" ${h.profileFrame === 'circle' ? 'selected' : ''}>Circular Mask</option>
+            <option value="square" ${h.profileFrame === 'square' ? 'selected' : ''}>Square Soft Border</option>
+          </select>
+        `;
+        ['eyebrow', 'firstName', 'lastName', 'subtitle', 'location', 'profileImage', 'profileFrame'].forEach(k => {
+            const inp = el.querySelector(`#a-${k}`);
+            if (inp) {
+                inp.addEventListener('change', e => {
+                    data.hero = data.hero || {};
+                    data.hero[k] = e.target.value;
+                });
+            }
+        });
+    }
+/* FILE: portfolio/js/admin.js — PART 3b OF 5 */
+    function renderAboutSection(el) {
+        const a = data.about || {};
+        el.innerHTML = `
+          <h3 class="admin-section-title">About Layout</h3>
+          <label class="admin-label">Visual Heading (Use \\n for design linebreaks)</label>
+          <input class="admin-input" id="a-heading" value="${esc((a.heading||'').replace(/\n/g,'\\n'))}"/>
+          
+          <label class="admin-label">Bio Introduction Paragraph 1 (Rich Text Editor)</label>
+          <div class="rte-toolbar" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+            <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">B</button>
+            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">I</button>
+            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">U</button>
+          </div>
+          <div class="admin-textarea" id="a-bio1-editor" contenteditable="true" style="min-height:100px; height:auto; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; transition:border-color 0.2s; word-break:break-word;">${a.bio1 || ''}</div>
+          
+          <label class="admin-label">Bio Details Paragraph 2 (Rich Text Editor)</label>
+          <div class="rte-toolbar" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+            <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">B</button>
+            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:2px 12px; cursor:pointer;">I</button>
+            <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">U</button>
+          </div>
+          <div class="admin-textarea" id="a-bio2-editor" contenteditable="true" style="min-height:100px; height:auto; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; transition:border-color 0.2s; word-break:break-word;">${a.bio2 || ''}</div>
+          
+          <label class="admin-label">Core Competencies / Skills (One per line)</label>
+          <textarea class="admin-textarea" id="a-skills" rows="3" style="display:block;">${(a.skills||[]).join('\n')}</textarea>
+        `;
+
+        function toggleStyleCommand(cmd) {
+            document.execCommand(cmd, false, null);
+        }
+
+        function handleRTEKeydown(e) {
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
+                const key = e.key.toLowerCase();
+                if (key === 'b') { e.preventDefault(); toggleStyleCommand('bold'); }
+                if (key === 'i') { e.preventDefault(); toggleStyleCommand('italic'); }
+                if (key === 'u') { e.preventDefault(); toggleStyleCommand('underline'); }
+            }
+        }
+
+        el.querySelectorAll('.rte-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleStyleCommand(btn.dataset.cmd);
+            });
+        });
+
+        const b1 = el.querySelector('#a-bio1-editor');
+        if (b1) {
+            b1.addEventListener('keydown', handleRTEKeydown);
+            b1.addEventListener('input', () => { data.about = data.about || {}; data.about.bio1 = b1.innerHTML; });
+            b1.addEventListener('focus', () => b1.style.borderColor = 'var(--accent)');
+            b1.addEventListener('blur', () => b1.style.borderColor = 'rgba(255,255,255,0.1)');
+        }
+
+        const b2 = el.querySelector('#a-bio2-editor');
+        if (b2) {
+            b2.addEventListener('keydown', handleRTEKeydown);
+            b2.addEventListener('input', () => { data.about = data.about || {}; data.about.bio2 = b2.innerHTML; });
+            b2.addEventListener('focus', () => b2.style.borderColor = 'var(--accent)');
+            b2.addEventListener('blur', () => b2.style.borderColor = 'rgba(255,255,255,0.1)');
+        }
+
+        el.querySelector('#a-heading').addEventListener('input', e => {
+            data.about = data.about || {};
+            data.about.heading = e.target.value.replace(/\\n/g, '\n');
+        });
+
+        const skillsTextarea = el.querySelector('#a-skills');
+        if (skillsTextarea) {
             skillsTextarea.addEventListener('change', e => {
                 data.about = data.about || {};
                 data.about.skills = e.target.value.split('\n').filter(Boolean);
@@ -324,7 +426,7 @@
               </select>
               <label class="admin-label">Context Hint / Card Description</label>
               <input class="admin-input" value="${esc(p.hint)}" onchange="window.__adminUpdateProj(${idx}, 'hint', this.value)"/>
-              <label class="admin-label">Technology Stack Matrix (Format Name:Percentage, click to expand)</label>
+              <label class="admin-label">Technology Stack Matrix (Format Name:Percentage, item per line, e.g. React:85)</label>
               <textarea class="admin-textarea" rows="2" style="overflow:hidden; resize:none; display:block;" onfocus="autoResizeTextarea(this)" oninput="autoResizeTextarea(this)" onchange="window.__adminUpdateProjStack(${idx}, this.value)">${(p.stack || []).map(s => `${s.name}:${s.pct}`).join('\n')}</textarea>
             </div>`;
         });
@@ -335,7 +437,7 @@
             renderProjectsSection(el);
         });
     }
-
+/* FILE: portfolio/js/admin.js — PART 4b OF 5 */
     function renderGallerySection(el) {
         data.gallery = data.gallery || [];
         const currentCategories = Array.from(new Set(data.gallery.map(g => g.category).filter(Boolean)));
@@ -360,7 +462,7 @@
           </div>
           <label class="admin-label">Image Grid Items Vault</label>
         `;
-/* FILE: portfolio/js/admin.js — PART 4b OF 5 */
+
         data.gallery.forEach((g, idx) => {
             html += `
             <div style="border: 1px solid #222; background:rgba(0,0,0,0.2); padding:1rem; margin-bottom:1rem; display:grid; grid-template-columns: 1fr; gap:0.5rem; position:relative;">
@@ -395,7 +497,7 @@
         });
 
         el.querySelector('#add-photo-btn').addEventListener('click', () => {
-            const fallbackCat = currentCategories[0] || "Org Life";
+            const fallbackCat = currentCategories || "Org Life";
             data.gallery.push({ category: fallbackCat, caption: "", src: "" });
             renderGallerySection(el);
         });
@@ -409,7 +511,7 @@
     };
 
     window.__adminProcessPhotoUpload = (idx, inputElement) => {
-        const file = inputElement.files[0];
+        const file = inputElement.files;
         if (!file) return;
         const reader = new FileReader();
         const previewFrame = document.getElementById(`preview-frame-${idx}`);
@@ -423,9 +525,11 @@
         };
         reader.readAsDataURL(file);
     };
-/* FILE: portfolio/js/admin.js — PART 5 OF 5 */
+/* FILE: portfolio/js/admin.js — PART 4c OF 5 */
     function renderContactSection(el) {
         const c = data.contact || {};
+        const liveTargetUrl = c.qrUrl || window.location.origin;
+
         el.innerHTML = `
           <h3 class="admin-section-title">Contact & Professional Anchors</h3> 
           <label class="admin-label">Public Access Communication Email</label> 
@@ -437,19 +541,58 @@
           <label class="admin-label">Cloud Resume / Portfolio Asset URL</label> 
           <input class="admin-input" id="c-resume" value="${esc(c.resume || '')}"/> 
           <label class="admin-label">Live Site QR Target URL Destination</label> 
-          <input class="admin-input" id="c-qrUrl" value="${esc(c.qrUrl || '')}"/>
+          <input class="admin-input" id="c-qrUrl" value="${esc(liveTargetUrl)}"/>
+          
+          <div style="margin-top:2rem; padding:1.5rem; border:1px dashed rgba(255,255,255,0.15); background:rgba(255,255,255,0.01); display:flex; flex-direction:column; align-items:center; gap:1.25rem;">
+             <p class="admin-label" style="margin:0; width:100%; text-align:left;">Marketing Tool: Download Shareable Portfolio QR Code</p>
+             <div id="admin-qr-preview" style="padding:1.25rem; background:#ffffff; border-radius:4px; min-width:240px; min-height:240px; display:flex; align-items:center; justify-content:center;"></div>
+             <button class="admin-save-btn" type="button" id="admin-download-qr-btn" style="width:100%; margin:0;">📥 Download High-Res QR Code PNG</button>
+          </div>
         `;
+
+        window.__adminRefreshQRMatrix = () => {
+            const qrPreviewContainer = document.getElementById('admin-qr-preview');
+            const urlInput = document.getElementById('c-qrUrl');
+            if (!qrPreviewContainer || typeof QRCode === 'undefined') return;
+            const textToEncode = urlInput ? urlInput.value.trim() : liveTargetUrl;
+            qrPreviewContainer.innerHTML = '';
+            new QRCode(qrPreviewContainer, {
+                text: textToEncode, width: 240, height: 240,
+                colorDark: '#000000', colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        };
+
+        const downloadBtn = el.querySelector('#admin-download-qr-btn');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', () => {
+                const qrPreviewContainer = document.getElementById('admin-qr-preview');
+                const generatedCanvas = qrPreviewContainer ? qrPreviewContainer.querySelector('canvas') : null;
+                if (!generatedCanvas) { alert('Please view the Contact tab first to compile the QR matrix pixels.'); return; }
+                const dataUrlStream = generatedCanvas.toDataURL('image/png');
+                const proxyLinkAnchor = document.createElement('a');
+                proxyLinkAnchor.href = dataUrlStream;
+                proxyLinkAnchor.download = `portfolio-marketing-qr.png`;
+                document.body.appendChild(proxyLinkAnchor);
+                proxyLinkAnchor.click();
+                document.body.removeChild(proxyLinkAnchor);
+            });
+        }
+
         ['email', 'linkedin', 'github', 'resume', 'qrUrl'].forEach(k => {
             const inp = el.querySelector(`#c-${k}`);
             if (inp) {
                 inp.addEventListener('change', e => {
                     data.contact = data.contact || {};
                     data.contact[k] = e.target.value;
+                    if (k === 'qrUrl' && typeof window.__adminRefreshQRMatrix === 'function') {
+                        window.__adminRefreshQRMatrix();
+                    }
                 });
             }
         });
     }
-
+/* FILE: portfolio/js/admin.js — PART 5 OF 5 */
     function renderSettingsSection(el) {
         el.innerHTML = `
           <h3 class="admin-section-title">Security & Credentials Panel</h3> 
@@ -500,8 +643,8 @@
         data.projects[idx].stack = val.split('\n').filter(Boolean).map(line => {
             const parts = line.split(':');
             return {
-                name: parts[0] ? parts[0].trim() : 'Tech',
-                pct: parts[1] ? parseInt(parts[1], 10) || 50 : 50
+                name: parts ? parts.trim() : 'Tech',
+                pct: parts ? parseInt(parts, 10) || 50 : 50
             };
         });
     };
@@ -510,4 +653,3 @@
         renderProjectsSection(document.getElementById('section-projects'));
     };
 })();
-
