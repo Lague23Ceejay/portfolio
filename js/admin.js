@@ -162,12 +162,16 @@
         }
     }
 
+    /* REPLACE THE renderActiveSection FUNCTION IN YOUR PART 2 CODE BLOCK */
     function renderActiveSection() {
         document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
         const el = document.getElementById(`section-${activeTab}`);
         if (!el) return;
+        
+        // 1. Make the section active in the DOM first (changes display from none to flex/block)
         el.classList.add('active');
         
+        // 2. Execute the template generation
         if (activeTab === 'hero') renderHeroSection(el);
         else if (activeTab === 'about') renderAboutSection(el);
         else if (activeTab === 'projects') renderProjectsSection(el);
@@ -175,6 +179,7 @@
         else if (activeTab === 'contact') renderContactSection(el);
         else if (activeTab === 'settings') renderSettingsSection(el);
 
+        // 3. FIX: Trigger the matrix calculations now that the container elements have an active layout width
         if (activeTab === 'contact' && typeof window.__adminRefreshQRMatrix === 'function') {
             window.__adminRefreshQRMatrix();
         }
@@ -525,7 +530,7 @@
         };
         reader.readAsDataURL(file);
     };
-/* FILE: portfolio/js/admin.js — PART 4c OF 5 */
+/* FILE: portfolio/js/admin.js — REVISED PART 4c OF 5 */
     function renderContactSection(el) {
         const c = data.contact || {};
         const liveTargetUrl = c.qrUrl || window.location.origin;
@@ -550,17 +555,29 @@
           </div>
         `;
 
+        // Safe global function mapping that draws the QR code cleanly when the tab is visible
         window.__adminRefreshQRMatrix = () => {
             const qrPreviewContainer = document.getElementById('admin-qr-preview');
             const urlInput = document.getElementById('c-qrUrl');
             if (!qrPreviewContainer || typeof QRCode === 'undefined') return;
+            
             const textToEncode = urlInput ? urlInput.value.trim() : liveTargetUrl;
+            
+            // Wipe clean any stale elements before rendering the fresh matrix
             qrPreviewContainer.innerHTML = '';
-            new QRCode(qrPreviewContainer, {
-                text: textToEncode, width: 240, height: 240,
-                colorDark: '#000000', colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H
-            });
+            
+            try {
+                new QRCode(qrPreviewContainer, {
+                    text: textToEncode, 
+                    width: 240, 
+                    height: 240,
+                    colorDark: '#000000', 
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } catch (err) {
+                console.error('QR Matrix computation stalled:', err);
+            }
         };
 
         const downloadBtn = el.querySelector('#admin-download-qr-btn');
@@ -568,7 +585,8 @@
             downloadBtn.addEventListener('click', () => {
                 const qrPreviewContainer = document.getElementById('admin-qr-preview');
                 const generatedCanvas = qrPreviewContainer ? qrPreviewContainer.querySelector('canvas') : null;
-                if (!generatedCanvas) { alert('Please view the Contact tab first to compile the QR matrix pixels.'); return; }
+                if (!generatedCanvas) { alert('Please wait a moment for the QR matrix pixels to finish drawing.'); return; }
+                
                 const dataUrlStream = generatedCanvas.toDataURL('image/png');
                 const proxyLinkAnchor = document.createElement('a');
                 proxyLinkAnchor.href = dataUrlStream;
