@@ -213,3 +213,50 @@
   .projects-header { flex-direction: column; align-items: flex-start; }
   .project-card:hover { transform: translateY(-4px); }
 }
+
+/* ============================================================
+   INDIVIDUAL TECHNOLOGY HORIZONTAL PROGRESS TRACKS STYLE
+   ============================================================ */
+.project-stack {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.stack-item {
+  display: block !important;
+  width: 100% !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-radius: 4px !important;
+  padding: 0.35rem 0.65rem !important;
+  box-sizing: border-box !important;
+}
+
+.stack-label {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  font-size: 0.8rem !important;
+  margin-bottom: 0.35rem !important;
+}
+
+/* The structural background bar container track */
+.stack-bar {
+  width: 100% !important;
+  height: 6px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 3px !important;
+  overflow: hidden !important;
+  position: relative !important;
+  display: block !important;
+}
+
+/* The active colored percentage completion bar layer filling */
+.stack-fill {
+  height: 100% !important;
+  border-radius: 3px !important;
+  display: block !important;
+  background-color: currentColor; /* Natively inherits the inline palette color */
+}

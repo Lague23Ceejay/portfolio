@@ -70,48 +70,68 @@ function calcOverall(stack) {
   return stack.reduce((sum, s) => sum + (s.pct || 0), 0) / stack.length;
 }
 /* FILE: portfolio/js/load-content.js — PART 2 OF 2 */
+/* FILE: portfolio/js/load-content.js — REMAINING PROGRESS RECONSTRUCTION FIX */
 function renderProjects(projects) {
   const grid = document.querySelector('.project-grid');
   if (!grid || !Array.isArray(projects)) return;
 
-  grid.innerHTML = projects.map(p => {
-    const stack = Array.isArray(p.stack) ? p.stack : [];
-    const overall = calcOverall(stack);
+  const colorPalette = ['#61dafb', '#41b883', '#3c873a', '#3178c6', '#f5820b', '#007acc', '#f1e05a', '#663399'];
 
-    // FIX: Simplified list map processing step to prevent template literal string nesting collisions
-    const stackHTML = stack.map(s => `
-      <div class="stack-item">
-        <div class="stack-label">
-          <span>${s.name}</span>
-          <span class="stack-pct">${s.pct}%</span>
-        </div>
-        <div class="stack-bar">
-          <div class="stack-fill" data-width="${s.pct}"></div>
-        </div>
-      </div>`).join('');
+  grid.innerHTML = projects.map((p, projIdx) => {
+    const stack = Array.isArray(p.stack) ? p.stack : [];
+    
+    const totalWeight = stack.reduce((sum, s) => sum + (parseInt(s.pct, 10) || 0), 0);
+    const overallPct = stack.length > 0 ? Math.round(totalWeight / stack.length) : 0;
+
+    const stackedProgressBarHTML = stack.map((s, stackIdx) => {
+        const segmentColor = colorPalette[stackIdx % colorPalette.length];
+        const sliceWidth = totalWeight > 0 ? ((parseInt(s.pct, 10) || 0) / totalWeight) * 100 : 0;
+        return `<div style="width:${sliceWidth}%; height:100%; background:${segmentColor}; transition:width 0.3s ease;"></div>`;
+    }).join('');
+
+    const individualStackLinesHTML = stack.map((s, stackIdx) => {
+        const assignedColor = colorPalette[stackIdx % colorPalette.length];
+        const displayPct = parseInt(s.pct, 10) || 0;
+        
+        return `
+          <div class="stack-item" style="border-left:3px solid ${assignedColor}; padding-left:0.65rem; margin-bottom:0.85rem; background:rgba(255,255,255,0.01); padding-top:0.25rem; padding-bottom:0.25rem;">
+            <div class="stack-label" style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.35rem;">
+              <span style="color:#e0e0e0; font-weight:500; letter-spacing:0.02em;">${esc(s.name)}</span>
+              <span style="color:${assignedColor}; font-family:monospace; font-weight:bold; font-size:0.85rem;">${displayPct}%</span>
+            </div>
+            <!-- Visible Track Bar Layout -->
+            <div class="stack-bar" style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; position:relative; display:block;">
+              <!-- Force direct immediate width assignment to avoid getting blocked by lazy-loading scripts -->
+              <div class="stack-fill" data-width="${displayPct}" style="width:${displayPct}%; height:100%; background:${assignedColor}; border-radius:3px; display:block; transition:width 0.5s ease-out;"></div>
+            </div>
+          </div>`;
+    }).join('');
 
     return `
       <div class="project-card reveal">
-        <div class="project-card-top">
-          <p class="project-num">${p.num || ''}</p>
-          <span class="project-status ${p.statusDone ? 'project-status--done' : ''}">${p.status || ''}</span>
+        <div class="project-card-top" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+          <p class="project-num" style="margin:0; font-family:monospace; font-weight:bold; color:rgba(255,255,255,0.4);">${p.num || ''}</p>
+          <span class="project-status ${p.statusDone ? 'project-status--done' : ''}" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; padding:2px 8px; border-radius:3px;">${p.status || ''}</span>
         </div>
-        <p class="project-type">${p.type || ''}</p>
-        <div class="project-overall">
-          <div class="project-overall-header">
-            <span class="project-overall-label">Overall Progress</span>
-            <span class="project-overall-pct">${overall.toFixed(1)}%</span>
+        <p class="project-type" style="font-size:1.1rem; font-weight:600; margin:0 0 1rem 0; color:#fff;">${p.type || ''}</p>
+        
+        <!-- MASTER MULTI-COLOR STACKED BAR -->
+        <div class="project-overall" style="margin-bottom:1.5rem; background:rgba(255,255,255,0.01); padding:0.75rem; border:1px solid rgba(255,255,255,0.03); border-radius:4px;">
+          <div class="project-overall-header" style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.8rem;">
+            <span class="project-overall-label" style="color:rgba(255,255,255,0.6);">Overall Completion Vector</span>
+            <span class="project-overall-pct" style="font-weight:bold; color:#fff; font-family:monospace;">${overallPct}%</span>
           </div>
-          <div class="project-overall-track">
-            <div class="project-overall-fill" data-width="${overall.toFixed(2)}"></div>
+          <div class="project-overall-track" style="width:100%; height:10px; background:rgba(255,255,255,0.06); border-radius:5px; display:flex; overflow:hidden;">
+             ${stackedProgressBarHTML}
           </div>
         </div>
-        <div class="project-stack">${stackHTML}</div>
-        <p class="project-hint">${p.hint || ''}</p>
+        
+        <!-- LIST INDIVIDUAL VISIBLE ITEMS -->
+        <div class="project-stack" style="margin-bottom:1rem; display:flex; flex-direction:column;">${individualStackLinesHTML}</div>
+        <p class="project-hint" style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin:0; font-style:italic;">${p.hint || ''}</p>
       </div>`;
   }).join('');
 }
-
 function renderGallery(items) {
   const grid = document.querySelector('.masonry-grid');
   if (!grid || !Array.isArray(items)) return;
@@ -183,3 +203,13 @@ function initOverallBars() {
 }
 
 document.addEventListener('DOMContentLoaded', loadContent);
+
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}

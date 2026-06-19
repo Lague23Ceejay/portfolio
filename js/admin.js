@@ -12,86 +12,7 @@
     let attempts = 0;
     let activeTab = 'hero';
 
-    // ── Zero-Dependency Accurate QR Data Matrix Generation Engine ──
-    // Generates a structurally compliant Type 2 (25x25) data barcode natively
-    const NativeQREngine = {
-        generateMatrix(text) {
-            const size = 25;
-            const matrix = Array(size).fill(null).map(() => Array(size).fill(0));
-            const reserved = Array(size).fill(null).map(() => Array(size).fill(false));
 
-            // 1. Draw Mathematically Valid Positional Anchors (Strict Requirement for Cellphones)
-            const corners = [[0, 0], [0, size - 7], [size - 7, 0]];
-            corners.forEach(([rStart, cStart]) => {
-                for (let r = 0; r < 7; r++) {
-                    for (let c = 0; c < 7; c++) {
-                        const isBorder = (r === 0 || r === 6 || c === 0 || c === 6);
-                        const isCenter = (r >= 2 && r <= 4 && c >= 2 && c <= 4);
-                        matrix[rStart + r][cStart + c] = (isBorder || isCenter) ? 1 : 0;
-                        reserved[rStart + r][cStart + c] = true;
-                    }
-                }
-                // Draw white separators around anchors
-                for (let r = -1; r <= 7; r++) {
-                    for (let c = -1; c <= 7; c++) {
-                        const targetR = rStart + r;
-                        const targetC = cStart + c;
-                        if (targetR >= 0 && targetR < size && targetC >= 0 && targetC < size) {
-                            if (!reserved[targetR][targetC]) {
-                                matrix[targetR][targetC] = 0;
-                                reserved[targetR][targetC] = true;
-                            }
-                        }
-                    }
-                }
-            });
-
-            // 2. Draw Mathematical Structural Timing Patterns
-            for (let i = 8; i < size - 8; i++) {
-                matrix[6][i] = (i % 2 === 0) ? 1 : 0;
-                matrix[i][6] = (i % 2 === 0) ? 1 : 0;
-                reserved[6][i] = true;
-                reserved[i][6] = true;
-            }
-
-            // 3. Convert input strings into structural data bit arrays
-            const bitStream = [];
-            // Add native string byte values into data streams
-            for (let i = 0; i < text.length; i++) {
-                const charCode = text.charCodeAt(i);
-                for (let b = 7; b >= 0; b--) {
-                    bitStream.push((charCode >> b) & 1);
-                }
-            }
-
-            // 4. Interleave data bit streams directly across unreserved grid quadrants
-            let bitIndex = 0;
-            let direction = -1; // Moving upwards initially
-            let c = size - 1;
-
-            while (c > 0) {
-                if (c === 6) c--; // Skip native structural timing columns entirely
-                for (let r = (direction < 0 ? size - 1 : 0); (direction < 0 ? r >= 0 : r < size); r += direction) {
-                    for (let colOffset = 0; colOffset < 2; colOffset++) {
-                        const currentC = c - colOffset;
-                        if (!reserved[r][currentC]) {
-                            let bit = 0;
-                            if (bitIndex < bitStream.length) {
-                                bit = bitStream[bitIndex++];
-                            } else {
-                                // Add native structural padding bits to preserve data density
-                                bit = ((r + currentC) % 2 === 0) ? 1 : 0;
-                            }
-                            matrix[r][currentC] = bit;
-                        }
-                    }
-                }
-                direction = -direction; // Reverse vertical column direction sweeps
-                c -= 2;
-            }
-            return { size, matrix };
-        }
-    };
     // ── Browser-Native Hashing Utility ──
     async function sha256(message) {
         const msgUint8 = new TextEncoder().encode(message);
@@ -380,6 +301,11 @@
 /* FILE: portfolio/js/admin.js — PART 3a OF 5 */
     function renderHeroSection(el) {
         const h = data.hero || {};
+        const frame = h.profileFrame || 'circle';
+        
+        // Setup structural mask previews to reflect crop parameters on the fly
+        const borderRadiusStyle = frame === 'circle' ? 'border-radius: 50%;' : 'border-radius: 8px;';
+
         el.innerHTML = `
           <h3 class="admin-section-title">Hero Configuration</h3>
           <label class="admin-label">Eyebrow Notification Text</label>
@@ -392,20 +318,59 @@
           <input class="admin-input" id="a-subtitle" value="${esc(h.subtitle || '')}"/>
           <label class="admin-label">Work / Location Tagline</label>
           <input class="admin-input" id="a-location" value="${esc(h.location || '')}"/>
-          <label class="admin-label">Profile Image URL Path</label>
-          <input class="admin-input" id="a-profileImage" value="${esc(h.profileImage || '')}"/>
+          
+          <!-- DYNAMIC HERO AVATAR FILE PICKER MODULE -->
+          <label class="admin-label">Profile Image Asset (Click below to Upload Image)</label>
+          <div style="display:flex; gap:1.25rem; align-items:center; margin-bottom:1rem; background:rgba(255,255,255,0.02); padding:1rem; border:1px solid rgba(255,255,255,0.05);">
+            <input type="file" accept="image/*" style="display:none;" id="hero-file-picker" onchange="window.__adminProcessHeroAvatarUpload(this)"/>
+            <button class="admin-close-btn" type="button" style="margin:0;" onclick="document.getElementById('hero-file-picker').click()">📁 Choose Profile Photo</button>
+            
+            <div id="hero-avatar-preview-frame" style="width:65px; height:65px; background:#111; border:1px solid #333; overflow:hidden; display:flex; align-items:center; justify-content:center; ${borderRadiusStyle}">
+              ${h.profileImage ? `<img src="${h.profileImage}" style="width:100%; height:100%; object-fit:cover;"/>` : `<span style="font-size:0.55rem; color:#555; text-align:center;">No Image</span>`}
+            </div>
+          </div>
+
           <label class="admin-label">Profile Crop Frame</label>
           <select class="admin-select" id="a-profileFrame">
             <option value="circle" ${h.profileFrame === 'circle' ? 'selected' : ''}>Circular Mask</option>
             <option value="square" ${h.profileFrame === 'square' ? 'selected' : ''}>Square Soft Border</option>
           </select>
         `;
-        ['eyebrow', 'firstName', 'lastName', 'subtitle', 'location', 'profileImage', 'profileFrame'].forEach(k => {
+
+        // Native client side binary data encoder callback mapping stream
+        window.__adminProcessHeroAvatarUpload = (inputEl) => {
+            const file = inputEl.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            const previewBox = document.getElementById('hero-avatar-preview-frame');
+            if (previewBox) previewBox.innerHTML = `<span style="font-size:0.5rem; color:var(--accent);">Reading...</span>`;
+
+            reader.onload = function(event) {
+                const base64DataUrl = event.target.result;
+                data.hero = data.hero || {};
+                data.hero.profileImage = base64DataUrl; // Store string directly to state matrix
+                if (previewBox) {
+                    previewBox.innerHTML = `<img src="${base64DataUrl}" style="width:100%; height:100%; object-fit:cover;"/>`;
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+
+        ['eyebrow', 'firstName', 'lastName', 'subtitle', 'location', 'profileFrame'].forEach(k => {
             const inp = el.querySelector(`#a-${k}`);
             if (inp) {
                 inp.addEventListener('change', e => {
                     data.hero = data.hero || {};
                     data.hero[k] = e.target.value;
+                    
+                    // Live check: immediately transform frame preview shape shapes on option change
+                    if (k === 'profileFrame') {
+                        const previewBox = document.getElementById('hero-avatar-preview-frame');
+                        if (previewBox) {
+                            previewBox.style.borderRadius = e.target.value === 'circle' ? '50%' : '8px';
+                        }
+                    }
                 });
             }
         });
@@ -487,39 +452,160 @@
             });
         }
     }
-
-/* FILE: portfolio/js/admin.js — PART 4a OF 5 */
+/* FILE: portfolio/js/admin.js — REVISED PART 4a OF 5 (MULTI-COLOR SEGMENT ENGINE) */
     function renderProjectsSection(el) {
         data.projects = data.projects || [];
         let html = `<h3 class="admin-section-title">Manage Tech Portfolio Work</h3>`;
-        data.projects.forEach((p, idx) => {
+        
+        // Consistent, high-fidelity technical brand color palette arrays
+        const colorPalette = ['#61dafb', '#41b883', '#3c873a', '#3178c6', '#f5820b', '#007acc', '#f1e05a', '#663399'];
+
+        data.projects.forEach((p, projIdx) => {
+            const stacks = Array.isArray(p.stack) ? p.stack : [];
+            
+            // Calculate total aggregate weight units to calibrate segment widths
+            const totalWeight = stacks.reduce((sum, s) => sum + (parseInt(s.pct, 10) || 0), 0);
+            const overallPct = stacks.length > 0 ? Math.round(totalWeight / stacks.length) : 0;
+
             html += `
-            <div style="border: 1px solid rgba(255,255,255,0.1); padding:1rem; margin-bottom:1rem; position:relative;">
-              <button style="position:absolute; right:1rem; top:1rem; background:#ff6b6b; border:none; color:white; padding:2px 8px; cursor:pointer;" onclick="window.__adminRemoveProj(${idx})">Delete</button>
+            <div style="border: 1px solid rgba(255,255,255,0.1); padding:1.25rem; margin-bottom:1.5rem; position:relative; background:rgba(0,0,0,0.15);">
+              <button style="position:absolute; right:1rem; top:1rem; background:#ff6b6b; border:none; color:white; padding:4px 10px; cursor:pointer; font-size:0.75rem; border-radius:2px;" onclick="window.__adminRemoveProj(${projIdx})">Delete Project</button>
+              
               <label class="admin-label">Project Index ID</label>
-              <input class="admin-input" value="${esc(p.num)}" onchange="window.__adminUpdateProj(${idx}, 'num', this.value)"/>
+              <input class="admin-input" value="${esc(p.num)}" onchange="window.__adminUpdateProj(${projIdx}, 'num', this.value)"/>
+              
               <label class="admin-label">System Architecture Type</label>
-              <input class="admin-input" value="${esc(p.type)}" onchange="window.__adminUpdateProj(${idx}, 'type', this.value)"/>
+              <input class="admin-input" value="${esc(p.type)}" onchange="window.__adminUpdateProj(${projIdx}, 'type', this.value)"/>
+              
               <label class="admin-label">Operational Status Text</label>
-              <input class="admin-input" value="${esc(p.status)}" onchange="window.__adminUpdateProj(${idx}, 'status', this.value)"/>
+              <input class="admin-input" value="${esc(p.status)}" onchange="window.__adminUpdateProj(${projIdx}, 'status', this.value)"/>
+              
               <label class="admin-label">Highlight Finished Theme</label>
-              <select class="admin-select" onchange="window.__adminUpdateProj(${idx}, 'statusDone', this.value === 'true')">
+              <select class="admin-select" onchange="window.__adminUpdateProj(${projIdx}, 'statusDone', this.value === 'true')">
                 <option value="false" ${!p.statusDone ? 'selected' : ''}>Active Work in Progress</option>
                 <option value="true" ${p.statusDone ? 'selected' : ''}>Production Complete</option>
               </select>
+              
               <label class="admin-label">Context Hint / Card Description</label>
-              <input class="admin-input" value="${esc(p.hint)}" onchange="window.__adminUpdateProj(${idx}, 'hint', this.value)"/>
-              <label class="admin-label">Technology Stack Matrix (Format Name:Percentage, item per line, e.g. React:85)</label>
-              <textarea class="admin-textarea" rows="2" style="overflow:hidden; resize:none; display:block;" onfocus="autoResizeTextarea(this)" oninput="autoResizeTextarea(this)" onchange="window.__adminUpdateProjStack(${idx}, this.value)">${(p.stack || []).map(s => `${s.name}:${s.pct}`).join('\n')}</textarea>
+              <input class="admin-input" value="${esc(p.hint)}" onchange="window.__adminUpdateProj(${projIdx}, 'hint', this.value)"/>
+              
+              <!-- DYNAMIC MULTI-COLOR STACKED REALTIME PROGRESS BAR -->
+              <div style="margin-top:1.5rem; background:rgba(255,255,255,0.02); padding:1rem; border:1px solid rgba(255,255,255,0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                  <span class="admin-label" style="margin:0; font-weight:600; color:var(--white);">Dynamic Tech Stack Distribution</span>
+                  <span id="proj-${projIdx}-overall-pct" style="font-family:monospace; font-weight:bold; color:var(--accent); font-size:1.1rem;">${overallPct}%</span>
+                </div>
+                
+                <!-- Master flex track container holds segmented slices -->
+                <div id="proj-${projIdx}-master-track" style="width:100%; height:12px; background:rgba(255,255,255,0.08); border-radius:6px; display:flex; overflow:hidden; box-shadow:inset 0 1px 3px rgba(0,0,0,0.3);">
+                  ${stacks.map((s, stackIdx) => {
+                      const segmentColor = colorPalette[stackIdx % colorPalette.length];
+                      const sliceWidth = totalWeight > 0 ? ((s.pct || 0) / totalWeight) * 100 : 0;
+                      return `<div id="p-${projIdx}-slice-${stackIdx}" style="width:${sliceWidth}%; height:100%; background:${segmentColor}; transition:width 0.1s ease-out;"></div>`;
+                  }).join('')}
+                </div>
+              </div>
+
+              <!-- FIELD INPUTS AND SLIDERS -->
+              <label class="admin-label" style="margin-top:1.5rem; display:block; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.25rem;">Technology Stack Progress Matrix</label>
+              <div id="project-${projIdx}-stack-container" style="margin-top:0.75rem; display:flex; flex-direction:column; gap:0.75rem;">
+                ${stacks.map((s, stackIdx) => {
+                    const assignedColor = colorPalette[stackIdx % colorPalette.length];
+                    return `
+                    <div class="stack-row-item" data-proj="${projIdx}" style="display:flex; align-items:center; gap:0.75rem; background:rgba(255,255,255,0.01); padding:0.5rem; border:1px solid rgba(255,255,255,0.04); border-left:4px solid ${assignedColor};">
+                      <input class="admin-input" type="text" placeholder="Tech Name" value="${esc(s.name)}" style="margin-bottom:0; flex:1;" onchange="window.__adminUpdateSliderItem(${projIdx}, ${stackIdx}, 'name', this.value)"/>
+                      
+                      <div style="flex:2; display:flex; align-items:center; gap:0.5rem;">
+                        <input class="admin-stack-slider" type="range" min="1" max="100" data-proj="${projIdx}" data-stack="${stackIdx}" value="${s.pct || 50}" style="flex:1; cursor:pointer; accent-color:${assignedColor};" oninput="window.__adminRecalculateRealtimeSlices(this, ${projIdx}, ${stackIdx})"/>
+                        <span id="p-${projIdx}-s-${stackIdx}-val" style="font-family:monospace; font-size:0.8rem; min-width:40px; text-align:right; color:${assignedColor}; font-weight:bold;">${s.pct || 50}%</span>
+                      </div>
+                      
+                      <button type="button" style="background:transparent; border:none; color:#ff6b6b; cursor:pointer; padding:4px; font-weight:bold;" onclick="window.__adminRemoveSliderItem(${projIdx}, ${stackIdx})">✕</button>
+                    </div>`;
+                }).join('')}
+              </div>
+              <button class="admin-close-btn" type="button" style="margin-top:0.75rem; width:auto; font-size:0.75rem; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1);" onclick="window.__adminAddSliderItem(${projIdx})">+ Add Technology Item</button>
             </div>`;
         });
-        html += `<button class="admin-save-btn" style="background:transparent; color:#fff; border:1px dashed #555; width:100%;" id="add-proj-btn">+ Add New Project Space</button>`;
+        
+        html += `<button class="admin-save-btn" style="background:transparent; color:#fff; border:1px dashed #555; width:100%; margin-top:0.5rem;" id="add-proj-btn">+ Add New Project Space</button>`;
         el.innerHTML = html;
+        
         el.querySelector('#add-proj-btn').addEventListener('click', () => {
             data.projects.push({ num: "00" + (data.projects.length + 1), status: "In Progress", statusDone: false, type: "New System", hint: "💡 Hint: Update details.", stack: [] });
             renderProjectsSection(el);
         });
     }
+
+    // ── Realtime Fluid Segment Width Recalculator ──
+    window.__adminRecalculateRealtimeSlices = (sliderEl, projIdx, stackIdx) => {
+        const val = parseInt(sliderEl.value, 10) || 1;
+        
+        // 1. Instantly update numerical labels on active lines
+        const rowValIndicator = document.getElementById(`p-${projIdx}-s-${stackIdx}-val`);
+        if (rowValIndicator) rowValIndicator.textContent = val + '%';
+        
+        // 2. Commit states locally 
+        if (data.projects[projIdx] && data.projects[projIdx].stack[stackIdx]) {
+            data.projects[projIdx].stack[stackIdx].pct = val;
+        }
+
+        // 3. Scan all siblings in the container to aggregate total weights
+        const cardSection = sliderEl.closest('div[style*="position:relative"]');
+        if (cardSection) {
+            const allSliders = cardSection.querySelectorAll('.admin-stack-slider');
+            
+            let totalWeight = 0;
+            allSliders.forEach(s => totalWeight += (parseInt(s.value, 10) || 1));
+            
+            const overallAverage = allSliders.length > 0 ? Math.round(totalWeight / allSliders.length) : 0;
+            
+            // 4. Update the aggregate display badge percentage number text
+            const averageBadge = document.getElementById(`proj-${projIdx}-overall-pct`);
+            if (averageBadge) averageBadge.textContent = overallAverage + '%';
+
+            // 5. Shift widths smoothly across slices in the bar segment layout tracks
+            allSliders.forEach(s => {
+                const sIdx = s.dataset.stack;
+                const currentVal = parseInt(s.value, 10) || 1;
+                const sliceDiv = document.getElementById(`p-${projIdx}-slice-${sIdx}`);
+                if (sliceDiv) {
+                    const recalculatedWidth = (currentVal / totalWeight) * 100;
+                    sliceDiv.style.width = recalculatedWidth + '%';
+                }
+            });
+        }
+    };
+    window.__adminUpdateSliderItem = (projIdx, stackIdx, field, val) => {
+        if (data.projects[projIdx] && data.projects[projIdx].stack[stackIdx]) {
+            data.projects[projIdx].stack[stackIdx][field] = val;
+        }
+    };
+
+    window.__adminAddSliderItem = (projIdx) => {
+        if (data.projects[projIdx]) {
+            data.projects[projIdx].stack = data.projects[projIdx].stack || [];
+            data.projects[projIdx].stack.push({ name: "New Tech", pct: 50 });
+            
+            // Targets your correct feature container viewport ID to trigger instantaneous redraw loops
+            const targetPane = document.getElementById('section-projects');
+            if (targetPane) {
+                renderProjectsSection(targetPane);
+            }
+        }
+    };
+
+    window.__adminRemoveSliderItem = (projIdx, stackIdx) => {
+        if (data.projects[projIdx] && data.projects[projIdx].stack) {
+            data.projects[projIdx].stack.splice(stackIdx, 1);
+            
+            // Targets your correct feature container viewport ID to trigger instantaneous redraw loops
+            const targetPane = document.getElementById('section-projects');
+            if (targetPane) {
+                renderProjectsSection(targetPane);
+            }
+        }
+    };
 /* FILE: portfolio/js/admin.js — PART 4b OF 5 */
     function renderGallerySection(el) {
         data.gallery = data.gallery || [];
@@ -608,7 +694,7 @@
         };
         reader.readAsDataURL(file);
     };
-/* FILE: portfolio/js/admin.js — PART 4c OF 5 (HIGH-CONTRAST CANVAS EXPORTER MODULE) */
+/* FILE: portfolio/js/admin.js — PART 4c OF 5 (STABLE SYSTEM PAINTER) */
     function renderContactSection(el) {
         const c = data.contact || {};
         const liveTargetUrl = c.qrUrl || window.location.origin;
@@ -628,12 +714,9 @@
           
           <div style="margin-top:2rem; padding:1.5rem; border:1px dashed rgba(255,255,255,0.15); background:rgba(255,255,255,0.01); display:flex; flex-direction:column; align-items:center; gap:1.25rem;">
              <p class="admin-label" style="margin:0; width:100%; text-align:left;">Marketing Tool: Download Shareable Portfolio QR Code</p>
-             
-             <!-- Safe high-density canvas block element mapping layout -->
-             <div id="admin-qr-preview" style="padding:1.5rem; background:#ffffff; border-radius:8px; display:inline-block; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
-                <canvas id="native-qr-canvas" width="300" height="300" style="display:block; width:300px; height:300px;"></canvas>
+             <div id="admin-qr-preview" style="padding:1.5rem; background:#ffffff; border-radius:4px; display:inline-block; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+                <canvas id="native-qr-canvas" width="260" height="260" style="display:block; width:260px; height:260px;"></canvas>
              </div>
-             
              <button class="admin-save-btn" type="button" id="admin-download-qr-btn" style="width:100%; margin:0;">📥 Download High-Res QR Code PNG</button>
           </div>
         `;
@@ -641,29 +724,29 @@
         window.__adminRefreshQRMatrix = () => {
             const canvas = document.getElementById('native-qr-canvas');
             const urlInput = document.getElementById('c-qrUrl');
-            if (!canvas) return;
+            if (!canvas || typeof QRCodeLib === 'undefined') return;
 
             const ctx = canvas.getContext('2d');
             const textToEncode = urlInput ? urlInput.value.trim() : liveTargetUrl;
 
-            // Generate verified math matrix layout paths
-            const { size, matrix } = NativeQREngine.generateMatrix(textToEncode);
+            // Generate verified industry-compliant data streams natively from local code bounds
+            var qrEngine = new QRCodeLib.QRCode(3, 1); // Version 3 handles urls cleanly
+            qrEngine.addData(textToEncode);
+            qrEngine.make();
 
-            // Paint an explicit high-contrast pure white base canvas layer
+            // Clear space and paint background white
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Enlarge pixel dimensions to 300x300 and compute structural blocks
-            const quietZone = 20; 
-            const usableSize = canvas.width - (quietZone * 2);
-            const scale = Math.floor(usableSize / size);
-            const offset = Math.floor((canvas.width - (size * scale)) / 2);
+            const count = qrEngine.getModuleCount();
+            const scale = Math.floor((canvas.width - 20) / count);
+            const offset = Math.floor((canvas.width - (count * scale)) / 2);
 
-            // Systematically paint precise data pixels
+            // Paint mathematically valid patterns onto the screen
             ctx.fillStyle = '#000000';
-            for (let r = 0; r < size; r++) {
-                for (let c = 0; c < size; c++) {
-                    if (matrix[r][c] === 1) {
+            for (var r = 0; r < count; r++) {
+                for (var c = 0; c < count; c++) {
+                    if (qrEngine.isDark(r, c)) {
                         ctx.fillRect(offset + (c * scale), offset + (r * scale), scale, scale);
                     }
                 }
@@ -674,7 +757,7 @@
         if (downloadBtn) {
             downloadBtn.addEventListener('click', () => {
                 const canvas = document.getElementById('native-qr-canvas');
-                if (!canvas) { alert('Canvas graphics still processing.'); return; }
+                if (!canvas) { alert('Canvas rendering target not initialized.'); return; }
                 
                 const dataUrlStream = canvas.toDataURL('image/png');
                 const proxyLinkAnchor = document.createElement('a');
@@ -746,15 +829,7 @@
     }
 
     window.__adminUpdateProj = (idx, field, val) => { data.projects[idx][field] = val; };
-    window.__adminUpdateProjStack = (idx, val) => {
-        data.projects[idx].stack = val.split('\n').filter(Boolean).map(line => {
-            const parts = line.split(':');
-            return {
-                name: parts ? parts.trim() : 'Tech',
-                pct: parts ? parseInt(parts, 10) || 50 : 50
-            };
-        });
-    };
+
     window.__adminRemoveProj = (idx) => {
         data.projects.splice(idx, 1);
         renderProjectsSection(document.getElementById('section-projects'));
