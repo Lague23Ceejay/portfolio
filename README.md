@@ -1,75 +1,78 @@
-# Portfolio Website & CMS Dashboard
+# Christian John K. Lague Portfolio & CMS Dashboard
 
-A modular single-page portfolio built with semantic HTML, modern CSS variables, and native vanilla JavaScript, backed by an integrated administrative content management workflow.
+A responsive single-page portfolio with a secure PIN-gated admin dashboard, modular section CSS, animated canvas visuals, and GitHub-backed JSON persistence.
 
 ## Overview
 
-This project organizes styles and behavior by feature components so each section remains fully isolated, responsive, and easy to maintain.
+This project is built with semantic HTML, modular CSS, and native JavaScript. Public page content is sourced from `data.json`, while the admin dashboard allows authenticated content editing, image uploads, project stack management, and QR generation.
 
 ## File Structure
 
 ```text
 ├── api/
-│   └── save-content.js     # Vercel serverless saving checkpoint pipeline
+│   └── save-content.js     # Vercel serverless endpoint that commits updated data.json to GitHub
 ├── css/
-│   ├── themes.css          # Master palette definition arrays (Midnight, Ocean, etc.)
-│   ├── base.css            # Root configurations, responsive breakpoints, global resets
-│   ├── nav.css             # Navigation menus and mobile drawer tracking
-│   ├── hero.css            # Header intro profile framing assets
-│   ├── about.css           # Grid layouts and technical skill tags
-│   ├── projects.css        # Interactive progress trackers and stack matrices
-│   ├── gallery.css         # Journey masonry grids and fluid modal lightboxes
-│   ├── contact.css         # Communication anchors and custom QR layout wrappers
-│   ├── admin.css           # Hidden pin-pad overlay system and layout dashboard
-│   ├── footer.css          # Baseline copyright notices and links
-│   ├── theme-switcher.css  # Floating palette interface settings
-│   └── theme-overrides.css # High-priority paint bindings (Loaded last)
+│   ├── themes.css          # Theme variable palettes and color profile definitions
+│   ├── base.css            # Global layout, reset rules, responsive breakpoints
+│   ├── nav.css             # Site navigation styling and mobile drawer behavior
+│   ├── hero.css            # Hero section profile image and intro styles
+│   ├── about.css           # About section layout and skills grid styling
+│   ├── projects.css        # Project card and progress bar design
+│   ├── gallery.css         # Filterable gallery grid, lightbox, and responsive masonry
+│   ├── contact.css         # Contact section layout and QR presentation styles
+│   ├── admin.css           # Admin panel UI, PIN overlay, tabs, and editor controls
+│   ├── footer.css          # Footer branding, links, and copyright layout
+│   ├── theme-switcher.css  # Floating theme selection interface styles
+│   └── theme-overrides.css # High-priority style overrides loading after base themes
 ├── js/
-│   ├── theme.js            # Persistent local storage theme assignment module
-│   ├── nav.js              # Mobile burger interaction triggers
-│   ├── background.js       # Dynamic multi-orb HTML5 canvas graphic driver
-│   ├── load-content.js     # Asynchronous file data injector & observer loops
-│   ├── admin.js            # Secure pin authentication & UI workspace generator
-│   └── gallery.js          # Modal lightbox image controllers
-├── index.html              # Core single-page layout document structure
-├── data.json               # Local operational storage state database file
-├── vercel.json             # Dynamic proxy rerouting routing manifest
-└── package.json            # Development tools dependency configuration manifest
+│   ├── theme.js            # Theme selection, persistence, and CSS variable switching
+│   ├── nav.js              # Mobile nav toggle and anchor link behavior
+│   ├── background.js       # Animated canvas background engine and particle atmosphere
+│   ├── load-content.js     # Data loader and render engine for public page sections
+│   ├── admin.js            # PIN login, admin dashboard rendering, and content binding
+│   └── gallery.js          # Gallery filtering and lightbox controls
+├── index.html              # Single-page application shell with hero, about, projects, gallery, contact, admin
+├── data.json               # Local site state and editable portfolio/content configuration
+├── vercel.json             # Vercel routing, rewrites, and deployment behavior
+└── package.json            # Project scripts and development dependency manifest
 ```
 
 ## Key Features
 
-- **Animated Canvas Background** (`js/background.js`): Uses a low-overhead, screen-blending script that reads theme properties dynamically to animate glowing vector entities.
-- **Dynamic Palette Theme Engine** (`js/theme.js`): Switches variable profiles instantly on demand (Midnight, Ocean, Forest, Dusk, Ember) and retains selections via localized browser states.
-- **Asynchronous Content Loader** (`js/load-content.js`): Queries, computes structural parameters, and renders card progress indicators dynamically while preserving viewport performance via Intersection Observers.
-- **PIN-Gated Administrative Dashboard** (`js/admin.js`): Implements a 4-digit PIN pad overlay featuring client-side SHA-256 WebCrypto data processing.
-- **Automated Upstream Commit Engine** (`api/save-content.js`): Converts adjustments to base64 formatting streams and writes files back into production automatically via GitHub repositories API loops.
+- **Animated Canvas Background** (`js/background.js`): Renders a responsive, theme-tinted animated atmosphere with orbs, particle drift, aurora bands, and pointer highlight effects.
+- **Theme Engine** (`js/theme.js`): Applies multiple palette themes through CSS variables and preserves the chosen theme in local storage.
+- **Content-Driven Public Page** (`js/load-content.js`): Loads `data.json` and renders the hero, about, projects, gallery, and contact sections dynamically.
+- **PIN-Gated Admin Dashboard** (`js/admin.js`): Opens through `#admin`, authenticates with a 4-digit PIN, and provides live editing for hero, about, projects, gallery, contact, and settings.
+- **Admin Media & Gallery Uploads**: Supports profile image uploads, gallery image file uploads, category management, and live preview in the admin panel.
+- **QR Generator** (`js/admin.js`): Builds a download-ready QR code from the contact URL target.
+- **GitHub Persistence** (`api/save-content.js`): Saves dashboard edits into `data.json` by committing via the GitHub API from the serverless endpoint.
 
-## Deployment & Production Hosting
+## Deployment & Hosting
 
-This workspace is fully optimized to compile natively inside the Vercel edge framework:
-- Local script components communicate changes straight to `/api/save-content`.
-- Production rewrite constraints are dynamically orchestrated by `vercel.json`.
-
----
-
-### ⚡ Operational Run Script Notes
-
-**Before Coding:**      `git pull origin main`  
-**After Coding:**       `git add .` → `git commit -m "update"` → `git push`  
-**Content Modifications:** ALWAYS apply edits through the authenticated `#admin` dashboard UI loop only.
+The workspace is designed for Vercel deployment:
+- `npm run start-local` runs the project locally with Vercel dev.
+- `npm run deploy` publishes the current branch to production.
+- `vercel.json` contains rewrite and routing config for the serverless save endpoint.
 
 ---
 
-### Local Runway Scripts
-
-To activate the dynamic runtime simulator environment locally on your terminal window, use this approach:
+### Local Development
 
 ```powershell
+npm install
 npm run start-local
-structural changes out live to production, use npm run deploy.
 ```
 
-Once running, navigate your target web client straight into these endpoints:
-- **Site URL:** http://localhost:3000
-- **Admin CMS URL:** http://localhost:3000/#admin
+Then visit:
+- **Site:** `http://localhost:3000`
+- **Admin:** `http://localhost:3000/#admin`
+
+---
+
+### Workflow Notes
+
+- Use the admin dashboard to edit website content and media.
+- `data.json` is the single source of live page state for the public site.
+- Content saved through the admin UI is persisted via `api/save-content.js` to GitHub.
+- Keep the repo in sync with `git pull origin main` before editing and `git push` after changes.
+

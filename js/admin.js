@@ -1,5 +1,5 @@
-/* FILE: portfolio/js/admin.js — COMBINED PART 1 & 2 (NATIVE QR MATRIX ENGINE) */
-/* FILE: portfolio/js/admin.js — PART 1 OF 5 (MATHEMATICALLY ACCURATE DATA MATRIX ENGINE) */
+/* FILE: portfolio/js/admin.js — ADMIN DASHBOARD ENGINE */
+/* FILE: portfolio/js/admin.js — PART 1 OF 5 (AUTHENTICATION + SECTION RENDERING) */
 (function() {
     'use strict';
 
@@ -13,7 +13,7 @@
     let activeTab = 'hero';
 
 
-    // ── Browser-Native Hashing Utility ──
+    // ── Browser-native SHA-256 helper for PIN hashing ──
     async function sha256(message) {
         const msgUint8 = new TextEncoder().encode(message);
         const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgUint8);
@@ -21,7 +21,7 @@
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // ── HTML Text Sanitizer (Prevents UI breaking / XSS) ──
+    // ── HTML escape helper to protect dashboard markup from injected text ──
     function esc(str) {
         if (!str) return '';
         return String(str)
@@ -32,7 +32,7 @@
             .replace(/'/g, '&#39;'); // FIX: Safely handles single-quote syntax escaping
     }
 
-    // ── Textarea Auto-Growing Adjuster ──
+    // ── Auto-expand textarea height for a better editor experience ──
     function autoResizeTextarea(el) {
         if (!el) return;
         el.style.height = 'auto';
