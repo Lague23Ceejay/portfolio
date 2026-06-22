@@ -86,8 +86,10 @@ function renderHero(hero) {
 }
 
 // ── About Section Rendering Engine ──
+/* FILE: portfolio/js/load-content.js — REVISED ABOUT SECTION 3D INTERACTIVE ENGINE */
 function renderAbout(a) {
   if (!a) return;
+  
   const headingEl = document.querySelector('.about-heading');
   if (headingEl) headingEl.innerHTML = (a.heading || '').replace(/\n/g, '<br>');
   
@@ -95,10 +97,140 @@ function renderAbout(a) {
   if (bioEls && bioEls[0]) bioEls[0].innerHTML = a.bio1 || '';
   if (bioEls && bioEls[1]) bioEls[1].innerHTML = a.bio2 || '';
   
-  const grid = document.querySelector('.skills-grid');
-  if (grid && Array.isArray(a.skills)) {
-    grid.innerHTML = a.skills.map(s => `<div class="skill-tag">${s}</div>`).join('');
-  }
+  const deckContainer = document.getElementById('about-card-swap-deck');
+  if (!deckContainer) return;
+
+  const skillsList = Array.isArray(a.skills) && a.skills.length > 0 ? a.skills : [];
+  deckContainer.innerHTML = '';
+  if (skillsList.length === 0) return;
+
+  // ── HIGH-FIDELITY VECTOR LOGO DICTIONARY ──
+  // Translates text keyword entries into crisp inline SVG graphic items natively
+  const vectorCatalog = {
+    react: `<svg width="42" height="42" viewBox="-11.5 -10.23174 23 20.46348" fill="none" xmlns="http://w3.org" style="color:#61dafb;"><circle cx="0" cy="0" r="2.05" fill="currentColor"/><g stroke="currentColor" stroke-width="1" fill="none"><ellipse rx="11" ry="4.2"/><ellipse rx="11" ry="4.2" transform="rotate(60)"/><ellipse rx="11" ry="4.2" transform="rotate(120)"/></g></svg>`,
+    js: `<svg width="38" height="38" viewBox="0 0 24 24" fill="#f7df1e" xmlns="http://w3.org"><path d="M0 0h24v24H0z" fill="none"/><path d="M1.5 1.5h21v21h-21zm17.3 15.2c-.3-.7-.9-1.2-1.7-1.4-.4-.1-.9-.2-1.3-.2-.5 0-.9.1-1.2.3-.3.2-.4.4-.4.8 0 .3.1.5.3.7.3.2.7.3 1.2.4l1.1.2c1 .2 1.8.6 2.3 1.2.5.6.7 1.3.7 2.2 0 1-.3 1.8-1 2.4s-1.6.9-2.8.9c-1.2 0-2.2-.4-2.9-1.2-.7-.7-1-1.7-1-2.9h2.6c0 .7.2 1.3.6 1.6.4.3.9.5 1.6.5.6 0 1.1-.1 1.4-.4.3-.2.4-.6.4-1 0-.3-.1-.6-.3-.8s-.7-.3-1.3-.5l-1.1-.2c-1.1-.2-1.9-.6-2.4-1.2-.5-.6-.7-1.4-.7-2.3 0-1 .3-1.8 1-2.4.7-.6 1.6-.9 2.7-.9 1 0 1.9.3 2.5.8.6.6.9 1.3 1.1 2.3zm-7.6-3.7v8.9h-2.6v-1.4c-.4.5-1 1-1.6 1.3-.6.3-1.3.4-2 .4-1.1 0-2-.3-2.6-1-.6-.6-1-1.5-1-2.6V13h2.6v5c0 .6.1 1.1.4 1.3.3.3.7.4 1.2.4.5 0 .9-.1 1.2-.4.3-.3.4-.7.4-1.4V13z"/></svg>`,
+    javascript: `<svg width="38" height="38" viewBox="0 0 24 24" fill="#f7df1e" xmlns="http://w3.org"><path d="M0 0h24v24H0z" fill="none"/><path d="M1.5 1.5h21v21h-21zm17.3 15.2c-.3-.7-.9-1.2-1.7-1.4-.4-.1-.9-.2-1.3-.2-.5 0-.9.1-1.2.3-.3.2-.4.4-.4.8 0 .3.1.5.3.7.3.2.7.3 1.2.4l1.1.2c1 .2 1.8.6 2.3 1.2.5.6.7 1.3.7 2.2 0 1-.3 1.8-1 2.4s-1.6.9-2.8.9c-1.2 0-2.2-.4-2.9-1.2-.7-.7-1-1.7-1-2.9h2.6c0 .7.2 1.3.6 1.6.4.3.9.5 1.6.5.6 0 1.1-.1 1.4-.4.3-.2.4-.6.4-1 0-.3-.1-.6-.3-.8s-.7-.3-1.3-.5l-1.1-.2c-1.1-.2-1.9-.6-2.4-1.2-.5-.6-.7-1.4-.7-2.3 0-1 .3-1.8 1-2.4.7-.6 1.6-.9 2.7-.9 1 0 1.9.3 2.5.8.6.6.9 1.3 1.1 2.3zm-7.6-3.7v8.9h-2.6v-1.4c-.4.5-1 1-1.6 1.3-.6.3-1.3.4-2 .4-1.1 0-2-.3-2.6-1-.6-.6-1-1.5-1-2.6V13h2.6v5c0 .6.1 1.1.4 1.3.3.3.7.4 1.2.4.5 0 .9-.1 1.2-.4.3-.3.4-.7.4-1.4V13z"/></svg>`,
+    nodejs: `<svg width="40" height="40" viewBox="0 0 24 24" fill="#3c873a" xmlns="http://w3.org"><path d="M12 2L2 7.5v11L12 22l10-5.5v-11L12 2zm-1 16.52l-5-2.77v-4.14l5 2.77v4.14zm0-5.2l-5-2.77 5-2.77 5 2.77-5 2.77zm6 2.43l-5 2.77v-4.14l5-2.77v-4.14z"/></svg>`,
+    node: `<svg width="40" height="40" viewBox="0 0 24 24" fill="#3c873a" xmlns="http://w3.org"><path d="M12 2L2 7.5v11L12 22l10-5.5v-11L12 2zm-1 16.52l-5-2.77v-4.14l5 2.77v4.14zm0-5.2l-5-2.77 5-2.77 5 2.77-5 2.77zm6 2.43l-5 2.77v-4.14l5-2.77v-4.14z"/></svg>`,
+    css: `<svg width="38" height="38" viewBox="0 0 24 24" fill="#264de4" xmlns="http://w3.org"><path d="M1.5 2l1.9 17.1L12 22l8.6-2.9L22.5 2H1.5zm16.5 6.3h-7.6v2.4h7.3l-.5 4.9-3.7 1.2-3.7-1.2-.2-2.1h2.4l.1 1 1.4.4 1.4-.4.2-1.9H6.4l-.4-5.3h12.3l-.3 2.4z"/></svg>`,
+    html: `<svg width="38" height="38" viewBox="0 0 24 24" fill="#e34f26" xmlns="http://w3.org"><path d="M1.5 2l1.9 17.1L12 22l8.6-2.9L22.5 2H1.5zm17 5.2l-.3 3H7.8l.2 2.6h10.4l-.9 9-5.5 1.8-5.5-1.8-.4-3.7h2.5l.2 1.8 3.2 1 3.2-1 .4-3.7H5.1L4.3 5.2h14.2z"/></svg>`,
+    vercel: `<svg width="36" height="36" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://w3.org"><path d="M12 2L2 20h20L12 2z"/></svg>`,
+    github: `<svg width="38" height="38" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://w3.org"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>`,
+    typescript: `<svg width="36" height="36" viewBox="0 0 24 24" fill="#3178c6" xmlns="http://w3.org"><path d="M0 0h24v24H0z" fill="none"/><path d="M1.5 1.5h21v21h-21zm15.6 11.2c0-1.8-1.5-2.4-3.4-2.8-.9-.2-1.7-.4-1.7-.9 0-.4.3-.6.9-.6.7 0 1.2.3 1.5.8l2.1-1.3c-.6-1.1-1.7-1.8-3.4-1.8-2.1 0-3.8 1.2-3.8 3.3 0 1.8 1.4 2.4 3.4 2.8.9.2 1.8.5 1.8 1 0 .5-.5.7-1.1.7-.9 0-1.6-.4-2.1-1.1l-2 1.3c.7 1.3 2.1 2.1 4 2.1 2.3 0 4.1-1.2 4.1-3.6zM6.9 7.4h6.3V5.2H4.4v2.2h2.5v11.1h2.5V7.4z"/></svg>`
+  };
+
+  const cardDistance = 60;
+  const verticalDistance = 70;
+  const skewAmount = 6;
+  const delayInterval = 5000;
+  
+  const config = {
+    ease: 'elastic.out(0.6, 0.9)',
+    durDrop: 2, durMove: 2, durReturn: 2,
+    promoteOverlap: 0.9, returnDelay: 0.05
+  };
+
+  let cardElementsArray = [];
+  let orderTrackingArray = [];
+
+  skillsList.forEach((skillLine, i) => {
+    const parts = skillLine.split(':');
+    const name = parts[0] ? parts[0].trim() : skillLine;
+    const subtitle = parts[1] ? parts[1].trim() : 'Core Stack';
+    const iconKey = parts[2] ? parts[2].trim().toLowerCase() : '';
+
+    const vectorMarkup = vectorCatalog[iconKey] || '';
+
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'swap-card-node';
+    cardDiv.innerHTML = `
+      ${vectorMarkup ? `<div class="swap-card-icon" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 4px 6px rgba(0,0,0,0.3));">${vectorMarkup}</div>` : ''}
+      <p class="swap-card-title">${name}</p>
+      <p class="swap-card-subtitle">${subtitle}</p>
+      <span class="swap-card-hint">Click to Cycle</span>
+    `;
+    
+    deckContainer.appendChild(cardDiv);
+    cardElementsArray.push(cardDiv);
+    orderTrackingArray.push(i);
+  });
+
+  const totalCards = cardElementsArray.length;
+  const makeSlot = (i, total) => ({
+    x: i * cardDistance, y: -i * verticalDistance, z: -i * cardDistance * 1.5, zIndex: total - i
+  });
+
+  const placeNow = (el, slot, skew) => {
+    const animator = window.gsap || gsap;
+    if (animator && typeof animator.set === 'function') {
+      animator.set(el, {
+        x: slot.x,
+        y: slot.y,
+        z: slot.z,
+        xPercent: -50,
+        yPercent: -50,
+        skewY: skew,
+        transformOrigin: 'center center',
+        zIndex: slot.zIndex,
+        force3D: true,
+        opacity: slot.zIndex < (totalCards - 3) ? 0 : 1
+      });
+    }
+  };
+  cardElementsArray.forEach((el, i) => { placeNow(el, makeSlot(i, totalCards), skewAmount); });
+
+  let masterIntervalTimer;
+  let activeTimeline = null;
+
+  const runCardSwapCycle = () => {
+    if (orderTrackingArray.length < 2) return;
+    const [frontIndex, ...remainingIndices] = orderTrackingArray;
+    const elFront = cardElementsArray[frontIndex];
+    
+    // SWAPPED: Using window.gsap scope directly to integrate seamlessly with the local core engine
+    const tl = window.gsap.timeline();
+    activeTimeline = tl;
+
+    tl.to(elFront, { y: '+=500', opacity: 0, duration: config.durDrop, ease: config.ease });
+    tl.addLabel('promote', `-=${config.durDrop * config.promoteOverlap}`);
+    
+    remainingIndices.forEach((idx, i) => {
+      const el = cardElementsArray[idx];
+      const slot = makeSlot(i, totalCards);
+      tl.set(el, { zIndex: slot.zIndex }, 'promote');
+      tl.to(el, {
+        x: slot.x, y: slot.y, z: slot.z,
+        opacity: slot.zIndex < (totalCards - 3) ? 0 : 1,
+        duration: config.durMove, ease: config.ease
+      }, `promote+=${i * 0.15}`);
+    });
+
+    const backSlot = makeSlot(totalCards - 1, totalCards);
+    tl.addLabel('return', `promote+=${config.durMove * config.returnDelay}`);
+    tl.call(() => { gsap.set(elFront, { zIndex: backSlot.zIndex }); }, null, 'return');
+    tl.to(elFront, {
+      x: backSlot.x, y: backSlot.y, z: backSlot.z,
+      opacity: backSlot.zIndex < (totalCards - 3) ? 0 : 1,
+      duration: config.durReturn, ease: config.ease
+    }, 'return');
+
+    tl.call(() => { orderTrackingArray = [...remainingIndices, frontIndex]; });
+  };
+
+  masterIntervalTimer = window.setInterval(runCardSwapCycle, delayInterval);
+
+  deckContainer.addEventListener('mouseenter', () => { if (activeTimeline) activeTimeline.pause(); clearInterval(masterIntervalTimer); });
+  deckContainer.addEventListener('mouseleave', () => { if (activeTimeline) activeTimeline.play(); masterIntervalTimer = window.setInterval(runCardSwapCycle, delayInterval); });
+
+  deckContainer.addEventListener('click', (e) => {
+    const clickedCard = e.target.closest('.swap-card-node');
+    if (!clickedCard) return;
+    const topCardIndex = orderTrackingArray[0];
+    if (cardElementsArray[topCardIndex] === clickedCard) {
+      if (activeTimeline && typeof activeTimeline.isActive === 'function' && activeTimeline.isActive()) activeTimeline.progress(1);
+      runCardSwapCycle();
+    }
+  });
 }
 /* FILE: portfolio/js/load-content.js — PART 2 OF 2 */
 function renderProjects(projects) {

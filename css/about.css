@@ -11,23 +11,41 @@
 .about-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6rem;
+  gap: 4rem; /* Balanced horizontal spacing to keep text readable */
   align-items: start;
+}
+
+/* Left Column: Groups your heading and the 3D card deck cleanly */
+.about-grid > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+/* Right Column: Holds your biographical paragraphs */
+.about-grid > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
 }
 
 .about-heading {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-size: clamp(2.5rem, 5vw, 4rem); /* Enhanced font boundaries */
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.01em;
+  margin: 0;
+  word-break: break-word;
 }
 
 .about-text {
   color: var(--gray-3);
   font-size: 0.95rem;
   line-height: 1.9;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
 }
 
 .about-text strong {
@@ -56,4 +74,121 @@
   border-color: rgba(255,255,255,0.25);
   color: var(--white);
   background: rgba(255,255,255,0.03);
+}
+
+/* ============================================================
+   VANILLA CSS ADAPTATION OF REACT BITS CARD SWAP COMPONENT
+   ============================================================ */
+.about-card-swap-container {
+  position: relative; /* Fixed: Removed absolute/corner overrides to prevent layout crowding */
+  width: 100%;
+  max-width: 450px; /* Enhanced width bounds for larger text scaling */
+  height: 280px; /* Gives comfortable depth perspective spacing below the cards */
+  margin: 1.5rem 0 0 0; /* Clean relative flow right beneath your heading */
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+  transform-style: preserve-3d;
+  overflow: visible;
+}
+
+/* Individual card layer parameters */
+.swap-card-node {
+  position: absolute;
+  top: 50%; /* Center origin anchors matching React Bits calculations */
+  left: 50%;
+  width: 320px;
+  height: 200px;
+  background: #000000; /* True sleek black layout card surface background */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  /* Transform spring transitions handling spatial shifts smoothly */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+/* Accent highlight border glow on active interactive elements */
+.swap-card-node:hover {
+  border-color: var(--accent, #61dafb);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 20px rgba(var(--accent-rgb, 97, 218, 251), 0.2);
+}
+
+/* Inner typography branding styles */
+.swap-card-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.03em;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-align: center;
+}
+
+.swap-card-subtitle {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--accent, #61dafb);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+  text-align: center;
+}
+
+/* Micro-interaction badge to guide visitors */
+.swap-card-hint {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 1rem;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.3);
+  font-family: monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
+/* ── PHONE & TABLET RESPONSIVE RE-ARCHITECTURE ── */
+@media (max-width: 992px) {
+  .about-grid {
+    grid-template-columns: 1fr; /* Collapse grid into a clean, spacious single column layout */
+    gap: 3rem;
+  }
+  
+  .about-card-swap-container {
+    margin: 2.5rem auto 1rem auto; /* Centers the 3D card deck layout perfectly under text paragraphs */
+    max-width: 340px;
+    transform: scale(0.95); /* Uniform scaling to fit comfortably on small screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .about-card-swap-container {
+    max-width: 280px;
+    height: 220px;
+    transform: scale(0.85); /* Hard shrink layout boundaries to prevent mobile side-scrolling */
+    margin: 2rem auto 0 auto;
+  }
+
+  .swap-card-node {
+    max-width: 280px;
+    height: 180px;
+    padding: 1.25rem;
+  }
+
+  .swap-card-title {
+    font-size: 1.2rem;
+  }
 }

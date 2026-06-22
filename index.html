@@ -61,11 +61,19 @@
   <section id="about">
     <p class="section-label reveal">01 — About</p>
     <div class="about-grid">
-      <div class="reveal"><h2 class="about-heading"></h2></div>
+      <div class="reveal">
+        <h2 class="about-heading"></h2>
+        
+        <!-- INTERACTIVE NATIVE CARD SWAP CONTAINER -->
+        <!-- This container mounts the 3D depth track layout area natively -->
+        <div class="about-card-swap-container reveal" id="about-card-swap-deck" style="margin-top: 2rem;">
+          <!-- Card elements will be dynamically injected here via load-content.js -->
+        </div>
+      </div>
       <div class="reveal">
         <p class="about-text"></p>
         <p class="about-text"></p>
-        <div class="skills-grid"></div>
+        <div class="skills-grid" style="display: none;"></div> <!-- Hidden legacy tags -->
       </div>
     </div>
   </section>
@@ -188,8 +196,8 @@
   </footer>
 
   <!-- Core Dependencies (Loaded First) -->
-   <!--pt src="https://cloudflare.com"></script>-->
   <!-- Script Execution Graph -->
+  <script src="js/gsap-core.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/background.js"></script>

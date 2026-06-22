@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "description": "Information Systems Web Portfolio & Management CMS Panel",
-  "scripts": {
-    "start-local": "npx vercel dev --local-config .vercel/project.json",
+    "scripts": {
+    "start-local": "npx vercel dev",
     "deploy": "npx vercel --prod"
   },
   "devDependencies": {

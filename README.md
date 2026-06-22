@@ -49,10 +49,20 @@ This project is built with semantic HTML, modular CSS, and native JavaScript. Pu
 
 ## Deployment & Hosting
 
-The workspace is designed for Vercel deployment:
-- `npm run start-local` runs the project locally with Vercel dev.
-- `npm run deploy` publishes the current branch to production.
+The workspace is designed for Vercel deployment with proper environment variable support:
+- `npm run start-local` runs the project locally with Vercel dev (environment variables are automatically loaded from `.vercel/.env.local` or Vercel dashboard secrets).
+- `npm run deploy` publishes the current branch to production with production environment variables.
 - `vercel.json` contains rewrite and routing config for the serverless save endpoint.
+
+### Environment Variables
+
+The admin dashboard saves are powered by environment variables set in Vercel:
+- **`GITHUB_TOKEN`** — Personal access token with `repo` scope for GitHub API authentication.
+- **`GITHUB_OWNER`** — GitHub account/organization name (defaults to `Lague23Ceejay`).
+- **`GITHUB_REPO`** — Repository name (defaults to `portfolio`).
+- **`GITHUB_BRANCH`** — Target branch for commits (defaults to `main`).
+
+Both local dev (via `.vercel/.env.local`) and production (via Vercel dashboard secrets) are fully functional. The endpoint uses Octokit for secure, rate-limit-aware GitHub API interactions.
 
 ---
 
@@ -69,10 +79,26 @@ Then visit:
 
 ---
 
+### Status & Known Issues
+
+**✅ Working:**
+- Hero, About, Projects, Gallery, Contact sections edit and save to GitHub
+- Profile image uploads (base64 encoding)
+- Gallery image uploads and category filtering
+- Theme switching and persistence
+- PIN-protected admin dashboard
+- Environment variables work across local and production environments
+
+**⚠️ In Progress:**
+- QR code generation in admin panel (currently under debugging; SVG-based implementation needs refinement)
+
+---
+
 ### Workflow Notes
 
 - Use the admin dashboard to edit website content and media.
 - `data.json` is the single source of live page state for the public site.
-- Content saved through the admin UI is persisted via `api/save-content.js` to GitHub.
+- Content saved through the admin UI is persisted via `api/save-content.js` to GitHub using Octokit.
+- Verify environment variables are set before deploying (`GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH`).
 - Keep the repo in sync with `git pull origin main` before editing and `git push` after changes.
 

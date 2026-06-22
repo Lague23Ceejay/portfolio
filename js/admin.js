@@ -272,15 +272,17 @@
 
     function renderAboutSection(el) {
         const a = data.about || {};
+        const skills = Array.isArray(a.skills) ? a.skills : [];
+
         el.innerHTML = `
-          <h3 class="admin-section-title">About Layout</h3>
+          <h3 class="admin-section-title">About Layout & 3D Swap Deck</h3>
           <label class="admin-label">Visual Heading (Use \\n for design linebreaks)</label>
           <input class="admin-input" id="a-heading" value="${esc((a.heading||'').replace(/\n/g,'\\n'))}"/>
           
           <label class="admin-label">Bio Introduction Paragraph 1 (Rich Text Editor)</label>
           <div class="rte-toolbar" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
             <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">B</button>
-            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">I</button>
+            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:2px 12px; cursor:pointer;">I</button>
             <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">U</button>
           </div>
           <div class="admin-textarea" id="a-bio1-editor" contenteditable="true" style="min-height:100px; height:auto; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; transition:border-color 0.2s; word-break:break-word;">${a.bio1 || ''}</div>
@@ -288,19 +290,33 @@
           <label class="admin-label">Bio Details Paragraph 2 (Rich Text Editor)</label>
           <div class="rte-toolbar" style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
             <button class="rte-btn" type="button" data-cmd="bold" style="font-weight:bold; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">B</button>
-            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">I</button>
+            <button class="rte-btn" type="button" data-cmd="italic" style="font-style:italic; background:#222; border:1px solid #444; color:#fff; padding:2px 12px; cursor:pointer;">I</button>
             <button class="rte-btn" type="button" data-cmd="underline" style="text-decoration:underline; background:#222; border:1px solid #444; color:#fff; padding:4px 12px; cursor:pointer;">U</button>
           </div>
           <div class="admin-textarea" id="a-bio2-editor" contenteditable="true" style="min-height:100px; height:auto; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.65rem 0.85rem; margin-bottom:1rem; outline:none; transition:border-color 0.2s; word-break:break-word;">${a.bio2 || ''}</div>
           
-          <label class="admin-label">Core Competencies / Skills (One per line)</label>
-          <textarea class="admin-textarea" id="a-skills" rows="3" style="display:block;">${(a.skills||[]).join('\n')}</textarea>
+          <!-- BRAND ICON CONTROL DECK FIELDS -->
+          <label class="admin-label" style="margin-top:1.5rem; display:block; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.25rem;">3D Swap Deck Technology Cards</label>
+          <div id="about-skills-deck-container" style="margin-top:0.75rem; display:flex; flex-direction:column; gap:0.75rem;">
+            ${skills.map((skillLine, idx) => {
+                const parts = skillLine.split(':');
+                const name = parts[0] ? parts[0].trim() : skillLine;
+                const sub = parts[1] ? parts[1].trim() : 'Core Tech';
+                const icon = parts[2] ? parts[2].trim() : '';
+                return `
+                  <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.01); padding:0.5rem; border:1px solid rgba(255,255,255,0.04);">
+                    <input class="admin-input" type="text" placeholder="Tech Name" value="${esc(name)}" style="margin-bottom:0; flex:1.2;" onchange="window.__adminUpdateDeckItem(${idx}, 'name', this.value)"/>
+                    <input class="admin-input" type="text" placeholder="Subtitle" value="${esc(sub)}" style="margin-bottom:0; flex:1.2;" onchange="window.__adminUpdateDeckItem(${idx}, 'subtitle', this.value)"/>
+                    <input class="admin-input" type="text" placeholder="Icon ID (react, js, node)" value="${esc(icon)}" style="margin-bottom:0; flex:1; font-family:monospace; font-size:0.75rem;" onchange="window.__adminUpdateDeckItem(${idx}, 'icon', this.value)"/>
+                    <button type="button" style="background:transparent; border:none; color:#ff6b6b; cursor:pointer; padding:4px; font-weight:bold; font-size:1rem;" onclick="window.__adminRemoveDeckItem(${idx})">✕</button>
+                  </div>
+                `;
+            }).join('')}
+          </div>
+          <button class="admin-close-btn" type="button" style="margin-top:0.75rem; width:auto; font-size:0.75rem; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1);" id="add-deck-card-btn">+ Add Card to Deck</button>
         `;
 
-        function toggleStyleCommand(cmd) {
-            document.execCommand(cmd, false, null);
-        }
-
+        function toggleStyleCommand(cmd) { document.execCommand(cmd, false, null); }
         function handleRTEKeydown(e) {
             if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
                 const key = e.key.toLowerCase();
@@ -310,42 +326,76 @@
             }
         }
 
-        el.querySelectorAll('.rte-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                toggleStyleCommand(btn.dataset.cmd);
-            });
-        });
-
+        el.querySelectorAll('.rte-btn').forEach(btn => { btn.addEventListener('click', (e) => { e.preventDefault(); toggleStyleCommand(btn.dataset.cmd); }); });
         const b1 = el.querySelector('#a-bio1-editor');
         if (b1) {
             b1.addEventListener('keydown', handleRTEKeydown);
             b1.addEventListener('input', () => { data.about = data.about || {}; data.about.bio1 = b1.innerHTML; });
-            b1.addEventListener('focus', () => b1.style.borderColor = 'var(--accent)');
-            b1.addEventListener('blur', () => b1.style.borderColor = 'rgba(255,255,255,0.1)');
         }
-
         const b2 = el.querySelector('#a-bio2-editor');
         if (b2) {
             b2.addEventListener('keydown', handleRTEKeydown);
             b2.addEventListener('input', () => { data.about = data.about || {}; data.about.bio2 = b2.innerHTML; });
-            b2.addEventListener('focus', () => b2.style.borderColor = 'var(--accent)');
-            b2.addEventListener('blur', () => b2.style.borderColor = 'rgba(255,255,255,0.1)');
         }
+        el.querySelector('#a-heading').addEventListener('input', e => { data.about = data.about || {}; data.about.heading = e.target.value.replace(/\\n/g, '\n'); });
 
-        el.querySelector('#a-heading').addEventListener('input', e => {
+        el.querySelector('#add-deck-card-btn').addEventListener('click', () => {
             data.about = data.about || {};
-            data.about.heading = e.target.value.replace(/\\n/g, '\n');
+            data.about.skills = data.about.skills || [];
+            data.about.skills.push("New Tech:Core Detail:react");
+            renderAboutSection(el);
         });
-
-        const skillsTextarea = el.querySelector('#a-skills');
-        if (skillsTextarea) {
-            skillsTextarea.addEventListener('change', e => {
-                data.about = data.about || {};
-                data.about.skills = e.target.value.split('\n').filter(Boolean);
-            });
-        }
     }
+
+    // ── Global Helper Handlers for the 3D Swap Deck Management ──
+    window.__adminUpdateDeckItem = (idx, field, value) => {
+        data.about = data.about || {};
+        data.about.skills = data.about.skills || [];
+        
+        let currentLine = data.about.skills[idx] || "Tech:Detail:react";
+        let parts = currentLine.split(':');
+        let name = parts[0] ? parts[0].trim() : "Tech";
+        let subtitle = parts[1] ? parts[1].trim() : "Detail";
+        let icon = parts[2] ? parts[2].trim() : "react";
+
+        if (field === 'name') name = value.trim() || "Tech";
+        if (field === 'subtitle') subtitle = value.trim() || "Detail";
+        if (field === 'icon') icon = value.trim().toLowerCase();
+
+        data.about.skills[idx] = `${name}:${subtitle}:${icon}`;
+    };
+
+    window.__adminRemoveDeckItem = (idx) => {
+        data.about = data.about || {};
+        if (Array.isArray(data.about.skills)) {
+            data.about.skills.splice(idx, 1);
+            renderAboutSection(document.getElementById('section-about'));
+        }
+    };
+
+    // ── Global Helper Handlers for the 3D Swap Deck Management ──
+    window.__adminUpdateDeckItem = (idx, field, value) => {
+        data.about = data.about || {};
+        data.about.skills = data.about.skills || [];
+        
+        let currentLine = data.about.skills[idx] || "Tech:Detail";
+        let parts = currentLine.split(':');
+        let name = parts[0] ? parts[0].trim() : "Tech";
+        let subtitle = parts[1] ? parts[1].trim() : "Detail";
+
+        if (field === 'name') name = value.trim() || "Tech";
+        if (field === 'subtitle') subtitle = value.trim() || "Detail";
+
+        data.about.skills[idx] = `${name}:${subtitle}`;
+    };
+
+    window.__adminRemoveDeckItem = (idx) => {
+        data.about = data.about || {};
+        if (Array.isArray(data.about.skills)) {
+            data.about.skills.splice(idx, 1);
+            renderAboutSection(document.getElementById('section-about'));
+        }
+    };
 /* FILE: portfolio/js/admin.js — PART 4a OF 5 */
     function renderProjectsSection(el) {
         data.projects = data.projects || [];
