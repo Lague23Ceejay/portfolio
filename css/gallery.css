@@ -246,3 +246,22 @@
 @media (max-width: 380px) {
   .masonry-grid { columns: 1; }
 }
+
+/* ============================================================
+   GALLERY MASONRY ITEM HOVER physics SHIFTS
+   ============================================================ */
+.masonry-item {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, box-shadow;
+}
+
+/* Fluid Hover Expansion: Magnifies grid tile slightly on screen or touch focus */
+.masonry-item:hover {
+  transform: scale(1.03) translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  z-index: 5;
+}

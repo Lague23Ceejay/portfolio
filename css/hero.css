@@ -132,3 +132,118 @@
     height: 80px;
   }
 }
+
+/* ============================================================
+   IMMERSED HERO PROFILE HOVER METRICS (METHOD 1)
+   ============================================================ */
+.hero-profile {
+  position: relative;
+  width: 140px; /* Enhanced baseline scale */
+  height: 140px;
+  margin-bottom: 2rem;
+  cursor: pointer;
+  z-index: 10;
+  /* Smooth spring physics easing curves */
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, width, height;
+}
+
+/* Fluid Physics Shift: When hovered, the picture expands, naturally pushing elements down */
+.hero-profile:hover {
+  width: 220px;
+  height: 220px;
+  transform: scale(1.05) translateY(-5px);
+  box-shadow: 0 15px 35px rgba(var(--accent-rgb, 97, 218, 251), 0.2);
+}
+
+.hero-profile-img, .hero-profile-placeholder {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.3s ease;
+}
+
+.hero-profile:hover .hero-profile-img {
+  border-color: var(--accent, #61dafb);
+}
+
+/* ============================================================
+   GLOBAL FLOATING EXPANSION OVERLAY (METHOD 2 LIGHTBOX)
+   ============================================================ */
+.global-floating-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 4, 6, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.global-floating-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.floating-frame-inner {
+  position: relative;
+  max-width: 85vw;
+  max-height: 80vh;
+  transform: scale(0.9);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.global-floating-overlay.active .floating-frame-inner {
+  transform: scale(1);
+}
+
+.floating-asset-img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.floating-frame-close {
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.75rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.floating-frame-close:hover {
+  color: #ff6b6b;
+  transform: rotate(90deg);
+}
+
+.floating-frame-caption {
+  color: #eee;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  background: rgba(0,0,0,0.4);
+  padding: 0.4rem 1.2rem;
+  border-radius: 20px;
+}

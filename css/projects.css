@@ -260,3 +260,105 @@
   display: block !important;
   background-color: currentColor; /* Natively inherits the inline palette color */
 }
+/* ============================================================
+   IMMERSED PROJECT CARD HOVER TRANSITIONS (METHOD 1)
+   ============================================================ */
+.project-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  cursor: pointer !important;
+  will-change: transform, box-shadow;
+  /* Smooth spring physics easing curves matching your layout profile */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Fluid Hover Expansion: Magnifies card slightly, shifts up, and glows the accent color border */
+.project-card:hover {
+  transform: translateY(-6px) scale(1.02) !important;
+  border-color: var(--accent, #61dafb) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(var(--accent-rgb, 97, 218, 251), 0.1) !important;
+  z-index: 4 !important;
+}
+
+/* ============================================================
+   PROJECT EXPANDED FLOATING LIGHTBOX OVERLAY (METHOD 2)
+   ============================================================ */
+.project-floating-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 4, 6, 0.9);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.project-floating-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.project-expanded-frame {
+  background: #0a0a0f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  width: 90vw;
+  max-width: 650px;
+  padding: 2.25rem;
+  box-sizing: border-box;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+  position: relative;
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.project-floating-overlay.active .project-expanded-frame {
+  transform: scale(1) translateY(0);
+}
+
+/* Scale up the dynamic stack filling bar items inside the lightbox presentation */
+.project-expanded-frame .project-overall-track {
+  height: 16px !important;
+  border-radius: 8px !important;
+}
+
+.project-expanded-frame .stack-bar {
+  height: 10px !important;
+  border-radius: 5px !important;
+}
+
+.project-expanded-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.project-expanded-close:hover {
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+  transform: rotate(90deg);
+}
