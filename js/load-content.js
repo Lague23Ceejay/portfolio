@@ -20,34 +20,50 @@ async function loadContent() {
   initOverallBars();
 }
 
-function renderHero(h) {
-  if (!h) return;
-  setText('#hero .hero-eyebrow', h.eyebrow);
-  setText('#hero .hero-name .line-1', h.firstName);
-  setText('#hero .hero-name .line-2', h.lastName);
-  
-  const titleEl = document.querySelector('#hero .hero-title');
-  if (titleEl) titleEl.innerHTML = `<span>${h.subtitle || ''}</span><br>${h.location || ''}`;
+/* FILE: portfolio/js/load-content.js — ULTRA-SAFE HERO INJECTOR ENGINE */
+function renderHero(hero) {
+  if (!hero) return;
 
-  const img = document.getElementById('hero-profile-img');
-  const placeholder = document.getElementById('hero-profile-placeholder');
-  const frame = h.profileFrame || 'circle';
+  // 1. Map text fields safely only if elements exist in HTML
+  const eyebrowEl = document.querySelector('.hero-eyebrow');
+  if (eyebrowEl && hero.eyebrow !== undefined) eyebrowEl.textContent = hero.eyebrow;
+
+  const firstNameEl = document.querySelector('.first-name');
+  if (firstNameEl && hero.firstName !== undefined) firstNameEl.textContent = hero.firstName;
+
+  const lastNameEl = document.querySelector('.last-name');
+  if (lastNameEl && hero.lastName !== undefined) lastNameEl.textContent = hero.lastName;
+
+  const subtitleEl = document.querySelector('.hero-subtitle');
+  if (subtitleEl && hero.subtitle !== undefined) subtitleEl.textContent = hero.subtitle;
+
+  const locationEl = document.querySelector('.hero-location');
+  if (locationEl && hero.location !== undefined) locationEl.textContent = hero.location;
+
+  // 2. ULTRA-SAFE AVATAR MAPPING LAYER (Completely immune to undefined display crashes)
+  const avatarImageEl = document.querySelector('.hero-avatar-img');
+  const avatarWrapperEl = document.querySelector('.hero-avatar-wrapper');
   
-  if (img) {
-    img.className = `hero-profile-img frame-${frame}`;
-    if (h.profileImage) {
-      img.src = h.profileImage; 
-      img.style.style.display = 'block';
-      if (placeholder) placeholder.style.display = 'none';
+  if (avatarImageEl) {
+    if (hero.profileImage && hero.profileImage.trim() !== "") {
+      avatarImageEl.src = hero.profileImage;
+      avatarImageEl.style.display = 'block';
     } else {
-      img.style.display = 'none';
-      if (placeholder) {
-        placeholder.className = `hero-profile-placeholder frame-${frame}`;
-        placeholder.style.display = 'block';
-      }
+      // Safely handle empty placeholder state assets without throwing runtime exceptions
+      avatarImageEl.src = "";
+      avatarImageEl.style.display = 'none';
+    }
+  }
+
+  if (avatarWrapperEl && hero.profileFrame) {
+    if (hero.profileFrame === 'circle') {
+      avatarWrapperEl.style.borderRadius = '50%';
+    } else {
+      avatarWrapperEl.style.borderRadius = '12px';
     }
   }
 }
+
 
 function renderAbout(a) {
   if (!a) return;
