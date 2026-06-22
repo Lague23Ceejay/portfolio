@@ -1,7 +1,7 @@
 {
   "_pin": "81dc9bdb52d04dc20036dbd8313ed055",
   "hero": {
-    "eyebrow": "Welcome to my portfolio",
+    "eyebrow": "Welcom to my portfolio website",
     "firstName": "Christian John",
     "lastName": "Lague",
     "subtitle": "Bachelor of Science in Information Systems",
@@ -11,7 +11,7 @@
   },
   "about": {
     "heading": "About me\\nAnd My Vision",
-    "bio1": "Type your primary introducing biography paragraph here...",
+    "bio1": "I wanna get richhhh!!!!!",
     "bio2": "Type your deep technical narrative background details here...",
     "skills": [
       "JavaScript",
@@ -41,6 +41,31 @@
           "pct": 60
         }
       ]
+    },
+    {
+      "num": "002",
+      "status": "In Progress",
+      "statusDone": false,
+      "type": "Mobile Application",
+      "hint": "💡 Hint: Update details.",
+      "stack": [
+        {
+          "name": "Frontend(Flutter(Dart))",
+          "pct": 50
+        },
+        {
+          "name": "Backend(ASP .NETCore(C#))",
+          "pct": 50
+        },
+        {
+          "name": "Database(Postgresql)",
+          "pct": 50
+        },
+        {
+          "name": "Web Admin Panel(React Blazor)",
+          "pct": 50
+        }
+      ]
     }
   ],
   "gallery": [
@@ -55,6 +80,6 @@
     "linkedin": "https://linkedin.com",
     "github": "https://github.com",
     "resume": "https://google.com",
-    "qrUrl": ""
+    "qrUrl": "portfoliocjl-portfolio.vercel.app"
   }
 }
